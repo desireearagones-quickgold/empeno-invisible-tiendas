@@ -27,7 +27,6 @@ export function calendario() {
   const fichas = [fecha("DATE_FICHA_1"), fecha("DATE_FICHA_2"), fecha("DATE_FICHA_3")] as const;
   const entrega = fecha("DATE_ENTREGA");
   const cierreResenas = fecha("DATE_CIERRE_RESENAS");
-  const cena = fecha("DATE_CENA");
 
   return {
     sorteo,
@@ -35,7 +34,6 @@ export function calendario() {
     limiteFicha: fichas.map(domingoAnterior) as [Date, Date, Date],
     entrega,
     cierreResenas,
-    cena,
   };
 }
 
@@ -56,8 +54,4 @@ export function fichaCerrada(numero: 1 | 2 | 3, ahora = new Date()): boolean {
 export function resenasAbiertas(ahora = new Date()): boolean {
   const c = calendario();
   return ahora >= c.entrega && ahora <= c.cierreResenas;
-}
-
-export function cenaAbierta(ahora = new Date()): boolean {
-  return ahora >= calendario().cena;
 }

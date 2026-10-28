@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { PuestoRanking } from "@/lib/ranking";
 
 type Estado = {
   totalParticipantes: number;
@@ -18,7 +19,7 @@ export default function AdminPanel({ textos }: { textos: Record<string, string> 
   const [estado, setEstado] = useState<Estado | null>(null);
   const [participantes, setParticipantes] = useState<Participante[] | null>(null);
   const [reseñas, setReseñas] = useState<Reseña[] | null>(null);
-  const [demo, setDemo] = useState(false);
+  const [ranking, setRanking] = useState<PuestoRanking[] | null>(null);
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -28,7 +29,7 @@ export default function AdminPanel({ textos }: { textos: Record<string, string> 
     fetch("/api/admin/estado").then((r) => r.json()).then(setEstado);
     fetch("/api/admin/participants").then((r) => r.json()).then((d) => setParticipantes(d.participants));
     fetch("/api/admin/reviews").then((r) => r.json()).then((d) => setReseñas(d.reviews));
-    fetch("/api/admin/demo").then((r) => r.json()).then((d) => setDemo(d.activo));
+    fetch("/api/admin/ranking").then((r) => r.json()).then((d) => setRanking(d.ranking));
   }
 
   useEffect(recargar, []);
@@ -102,16 +103,6 @@ export default function AdminPanel({ textos }: { textos: Record<string, string> 
     recargar();
   }
 
-  async function alternarDemo() {
-    const nuevo = !demo;
-    await fetch("/api/admin/demo", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ activar: nuevo }),
-    });
-    setDemo(nuevo);
-  }
-
   function copiar(texto: string) {
     navigator.clipboard.writeText(texto).then(() => setMensaje("Copiado."));
   }
@@ -156,13 +147,6 @@ export default function AdminPanel({ textos }: { textos: Record<string, string> 
           className="rounded bg-(--color-dorado) px-4 py-2 text-sm font-semibold text-black disabled:opacity-40"
         >
           {estado?.sorteoHecho ? "Sorteo ya ejecutado" : "Ejecutar sorteo"}
-        </button>
-        <label className="block text-xs text-white/50 mt-3">Modo demo (datos falsos para enseñar la cena)</label>
-        <button
-          onClick={alternarDemo}
-          className={"rounded px-3 py-1 text-xs font-semibold " + (demo ? "bg-(--color-dorado) text-black" : "bg-white/10 text-white")}
-        >
-          {demo ? "Demo activada" : "Activar demo"}
         </button>
       </section>
 
@@ -262,6 +246,28 @@ export default function AdminPanel({ textos }: { textos: Record<string, string> 
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-2">
+        <h2 className="font-semibold">Resultado de la votación</h2>
+        <p className="text-xs text-white/50">
+          Solo lo ves tú aquí. Gana el regalo con más quilates en total; empates por nota media y luego por
+          nº de reseñas.
+        </p>
+        {ranking && ranking.length === 0 && <p className="text-white/50 text-sm">Todavía no hay reseñas.</p>}
+        <ol className="divide-y divide-white/5 text-sm">
+          {ranking?.map((r, i) => (
+            <li key={r.giftId} className="flex items-center justify-between gap-2 py-2">
+              <span>
+                <span className="text-(--color-dorado) font-semibold">{i + 1}.</span> {r.title}
+                <span className="text-white/40"> (para {r.receiverName ?? "—"})</span>
+              </span>
+              <span className="shrink-0 text-white/70">
+                {r.media.toFixed(1)} ◆ · {r.numReseñas} reseñas · {r.totalQuilates} quilates
+              </span>
+            </li>
+          ))}
+        </ol>
       </section>
     </main>
   );

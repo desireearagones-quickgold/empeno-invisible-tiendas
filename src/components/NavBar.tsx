@@ -6,11 +6,9 @@ import { usePathname, useRouter } from "next/navigation";
 export default function NavBar({
   esAdmin,
   mostrarRegalos,
-  mostrarCena,
 }: {
   esAdmin: boolean;
   mostrarRegalos: boolean;
-  mostrarCena: boolean;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -28,7 +26,6 @@ export default function NavBar({
     // No tiene sentido enseñar estos enlaces antes de que haya nada que ver
     // ahí: solo confunde (la gente los pulsa y se encuentra un "cerrado").
     ...(mostrarRegalos || esAdmin ? [{ href: "/resenas", label: "Regalos" }] : []),
-    ...(mostrarCena || esAdmin ? [{ href: "/cena", label: "Cena" }] : []),
     ...(esAdmin ? [{ href: "/admin", label: "Admin" }] : []),
   ];
 
