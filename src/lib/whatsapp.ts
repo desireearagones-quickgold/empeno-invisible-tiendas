@@ -5,6 +5,8 @@ type Plantilla = {
   lang?: string;
   /** Variables con nombre del cuerpo, ej. { enlace: "https://..." }. */
   variables?: Record<string, string>;
+  /** Si la plantilla tiene un botón de URL dinámica: solo la parte que falta detrás de la URL base. */
+  botonSufijo?: string;
 };
 
 /**
@@ -28,9 +30,9 @@ export async function enviarWhatsApp(to: string, body: Plantilla | { text: strin
           template: {
             name: body.template,
             language: { code: body.lang ?? "en_US" },
-            ...(body.variables && Object.keys(body.variables).length > 0
-              ? {
-                  components: [
+            components: [
+              ...(body.variables && Object.keys(body.variables).length > 0
+                ? [
                     {
                       type: "body",
                       parameters: Object.entries(body.variables).map(([parameter_name, text]) => ({
@@ -39,9 +41,19 @@ export async function enviarWhatsApp(to: string, body: Plantilla | { text: strin
                         text,
                       })),
                     },
-                  ],
-                }
-              : {}),
+                  ]
+                : []),
+              ...(body.botonSufijo
+                ? [
+                    {
+                      type: "button",
+                      sub_type: "url",
+                      index: "0",
+                      parameters: [{ type: "text", text: body.botonSufijo }],
+                    },
+                  ]
+                : []),
+            ],
           },
         }
       : {
@@ -73,5 +85,18 @@ export async function enviarAvisoSorteo(telefono: string, enlacePersonal: string
     template: "amigo_invisible",
     lang: "es",
     variables: { enlace: enlacePersonal },
+  });
+}
+
+/**
+ * Igual, pero con la plantilla mejorada (botón en vez de enlace pegado en el
+ * texto). `token` es solo el trocito que falta detrás de la URL base del
+ * botón (la que se puso al crear la plantilla en Meta), no la URL entera.
+ */
+export async function enviarAvisoSorteoConBoton(telefono: string, token: string) {
+  return enviarWhatsApp(telefono, {
+    template: "amigo_invisible_v2",
+    lang: "es",
+    botonSufijo: token,
   });
 }

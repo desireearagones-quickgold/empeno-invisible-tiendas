@@ -1,15 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  /* Colores de marca Quickgold, tomados del logo (icono ">" dorado + texto
-     casi negro) en la captura de la herramienta de proyectos. Son una
-     estimación visual de una captura pequeña, no un HEX exacto de manual de
-     marca: si hay un brandbook con los valores oficiales, mejor usar esos. */
-  --color-dorado: #e0982f;
-  --color-dorado-oscuro: #b3751f;
-  --color-negro: #1a1a1a;
+  /* Colores oficiales de marca Quickgold (brandboard). */
+  --color-dorado: #f7bc0f; /* Amarillo Quick: acento, CTAs */
+  --color-dorado-oscuro: #05709b; /* Azul medio: segundo acento, bordes */
+  --color-negro: #04232d; /* Azul oscuro: fondo principal */
   --color-blanco: #ffffff;
-  --color-crema: #f3ead9;
+  --color-crema: #f4f8fd; /* Azul fondos: fondo claro de documentos */
+  --color-azul-claro: #6bd0e7;
 
   --color-fondo: var(--color-negro);
   --color-texto: var(--color-blanco);
@@ -21,9 +19,10 @@
   --color-negro: var(--color-negro);
   --color-blanco: var(--color-blanco);
   --color-crema: var(--color-crema);
-  --font-sans: var(--font-geist-sans);
+  --color-azul-claro: var(--color-azul-claro);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
-  --font-documento: var(--font-documento);
+  --font-documento: var(--font-inter);
 }
 
 body {
@@ -31,7 +30,7 @@ body {
 }
 
 .documento {
-  font-family: var(--font-documento), "Courier New", monospace;
+  font-family: var(--font-documento), Arial, Helvetica, sans-serif;
 }
 
 @media (prefers-reduced-motion: reduce) {

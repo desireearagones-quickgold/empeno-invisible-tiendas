@@ -21,6 +21,8 @@ export default function LogoQuickgold({
       width={width}
       height={height}
       className={className}
+      priority
+      unoptimized
     />
   );
 }

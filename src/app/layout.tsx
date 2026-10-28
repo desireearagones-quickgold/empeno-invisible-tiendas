@@ -1,23 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Special_Elite } from "next/font/google";
+import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { sesionActual, esAdmin } from "@/lib/auth";
 import NavBar from "@/components/NavBar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
-
-const especialElite = Special_Elite({
-  variable: "--font-documento",
-  subsets: ["latin"],
-  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -29,10 +23,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const sesion = await sesionActual();
 
   return (
-    <html
-      lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} ${especialElite.variable} h-full antialiased`}
-    >
+    <html lang="es" className={`${inter.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-(--color-fondo) text-(--color-texto)">
         {sesion && <NavBar esAdmin={esAdmin(sesion.email)} />}
         {children}
