@@ -37,16 +37,25 @@ export async function POST(req: NextRequest) {
       .map((l) => l.trim())
       .filter(Boolean);
 
+    // Dos formatos válidos: "nombre,telefono" o "nombre,email,telefono". Se
+    // distingue mirando si la segunda columna tiene "@".
     let añadidos = 0;
     for (const fila of filas) {
-      const [name, email, phone] = fila.split(",").map((c) => c.trim());
-      if (!name || !email || name.toLowerCase() === "name") continue;
+      const columnas = fila.split(",").map((c) => c.trim());
+      if (!columnas[0] || columnas[0].toLowerCase() === "name" || columnas[0].toLowerCase() === "nombre") continue;
+
+      const name = columnas[0];
+      const segundaEsEmail = columnas[1]?.includes("@");
+      const email = segundaEsEmail ? columnas[1].toLowerCase() : null;
+      const phone = segundaEsEmail ? columnas[2] : columnas[1];
+      if (!name) continue;
+
       await db
         .insert(participants)
         .values({
           id: crypto.randomUUID(),
           name,
-          email: email.toLowerCase(),
+          email,
           phone: limpiarTelefono(phone),
           accessToken: randomToken(),
           createdAt: new Date().toISOString(),
@@ -58,13 +67,13 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => null);
-  if (!body?.name || !body?.email) {
-    return NextResponse.json({ error: "Faltan nombre o email." }, { status: 400 });
+  if (!body?.name) {
+    return NextResponse.json({ error: "Falta el nombre." }, { status: 400 });
   }
   await db.insert(participants).values({
     id: crypto.randomUUID(),
     name: body.name,
-    email: String(body.email).toLowerCase(),
+    email: body.email ? String(body.email).toLowerCase() : null,
     phone: limpiarTelefono(body.phone),
     accessToken: randomToken(),
     createdAt: new Date().toISOString(),

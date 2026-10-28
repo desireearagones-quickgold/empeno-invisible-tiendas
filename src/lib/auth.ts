@@ -58,10 +58,15 @@ export async function cerrarSesion() {
   jar.delete(COOKIE_NAME);
 }
 
-export function esAdmin(email: string): boolean {
-  const admins = (process.env.ADMIN_EMAILS ?? "")
+/** Identifica a las admins por teléfono (en vez de email: la lista real de
+ * participantes no trae email, solo nombre y teléfono). Acepta el teléfono
+ * en cualquier formato, lo compara ya limpio de espacios/símbolos. */
+export function esAdmin(phone: string | null): boolean {
+  if (!phone) return false;
+  const limpio = phone.replace(/[^0-9]/g, "");
+  const admins = (process.env.ADMIN_PHONES ?? "")
     .split(",")
-    .map((e) => e.trim().toLowerCase())
+    .map((p) => p.replace(/[^0-9]/g, ""))
     .filter(Boolean);
-  return admins.includes(email.trim().toLowerCase());
+  return admins.some((a) => limpio.endsWith(a) || a.endsWith(limpio));
 }

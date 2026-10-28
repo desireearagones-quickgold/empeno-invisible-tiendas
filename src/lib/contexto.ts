@@ -11,7 +11,7 @@ export async function requerirSesion() {
 
 export async function requerirAdmin() {
   const participante = await sesionActual();
-  if (!participante || !esAdmin(participante.email)) {
+  if (!participante || !esAdmin(participante.phone)) {
     return { error: NextResponse.json({ error: "No tienes acceso." }, { status: 403 }) } as const;
   }
   return { participante } as const;

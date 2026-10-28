@@ -3,7 +3,10 @@ import { pgTable, text, integer, boolean, jsonb, uniqueIndex } from "drizzle-orm
 export const participants = pgTable("participants", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
-  email: text("email").notNull().unique(),
+  // Opcional: la lista real de participantes es solo nombre + teléfono, no
+  // hay email de empresa para todo el mundo. El login nunca lo ha usado (es
+  // por enlace personal), así que esto es solo informativo si se rellena.
+  email: text("email").unique(),
   // Formato internacional sin "+" ni espacios (ej. "34617218632"), para
   // mandar el WhatsApp con el enlace de acceso. Puede quedar vacío si no se
   // manda por API (p. ej. se copia el enlace a mano).

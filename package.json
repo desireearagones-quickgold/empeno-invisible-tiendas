@@ -8,8 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test:sorteo": "tsx scripts/test-sorteo.mjs",
-    "db:push": "drizzle-kit push",
-    "db:seed": "tsx scripts/seed.mts"
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
     "date-fns-tz": "^3.2.0",

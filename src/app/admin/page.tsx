@@ -6,7 +6,7 @@ import AdminPanel from "./AdminPanel";
 export default async function Admin() {
   const sesion = await sesionActual();
   if (!sesion) redirect("/");
-  if (!esAdmin(sesion.email)) redirect("/contrato");
+  if (!esAdmin(sesion.phone)) redirect("/contrato");
 
   const cal = calendario();
   const url = process.env.APP_URL ?? "";

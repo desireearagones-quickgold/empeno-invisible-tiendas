@@ -35,10 +35,13 @@ export async function POST(req: NextRequest) {
       .where(eq(assignments.id, entrante.id));
   });
 
-  // Avisamos solo a X (su contrato / joya ha cambiado).
+  // Avisamos solo a X (su contrato / joya ha cambiado). Solo por email: la
+  // mayoría de la lista real no tiene, así que esto es best-effort. Si no
+  // hay email, las organizadoras tienen que avisarle a mano (copiar su
+  // enlace desde /admin y decirle que ha cambiado su encargo).
   const xId = decryptId(entrante.giverEnc);
   const [x] = await db.select().from(participants).where(eq(participants.id, xId));
-  if (x) {
+  if (x?.email) {
     const url = `${process.env.APP_URL}/contrato`;
     await enviarAviso(
       x.email,

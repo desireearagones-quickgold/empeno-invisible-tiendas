@@ -28,7 +28,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-(--color-fondo) text-(--color-texto)">
         {sesion && (
           <NavBar
-            esAdmin={esAdmin(sesion.email)}
+            esAdmin={esAdmin(sesion.phone)}
             mostrarRegalos={resenasAbiertas()}
             mostrarCena={cenaAbierta()}
           />

@@ -11,7 +11,7 @@ type Estado = {
   reseñasTotales: number;
 };
 
-type Participante = { id: string; name: string; email: string; phone: string | null; accessToken: string };
+type Participante = { id: string; name: string; email: string | null; phone: string | null; accessToken: string };
 type Reseña = { id: string; comment: string | null; quilates: number; hidden: boolean; giftTitle: string | null };
 
 export default function AdminPanel({ textos }: { textos: Record<string, string> }) {
@@ -180,15 +180,15 @@ export default function AdminPanel({ textos }: { textos: Record<string, string> 
             className="rounded border border-white/15 bg-black/30 px-2 py-1 text-sm"
           />
           <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="email@quickgold.es"
+            value={telefono}
+            onChange={(e) => setTelefono(e.target.value)}
+            placeholder="617218632"
             className="rounded border border-white/15 bg-black/30 px-2 py-1 text-sm"
           />
           <input
-            value={telefono}
-            onChange={(e) => setTelefono(e.target.value)}
-            placeholder="617218632 (opcional)"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="email (opcional)"
             className="rounded border border-white/15 bg-black/30 px-2 py-1 text-sm"
           />
           <button type="submit" className="rounded bg-(--color-dorado) px-3 py-1 text-sm font-semibold text-black">
@@ -196,7 +196,7 @@ export default function AdminPanel({ textos }: { textos: Record<string, string> 
           </button>
         </form>
         <p className="text-xs text-white/40">
-          El CSV admite una tercera columna opcional con el teléfono: <code>nombre,email,telefono</code>
+          El CSV admite <code>nombre,telefono</code> o, si hace falta email, <code>nombre,email,telefono</code>
         </p>
         <input
           type="file"
@@ -208,7 +208,7 @@ export default function AdminPanel({ textos }: { textos: Record<string, string> 
           {participantes?.map((p) => (
             <li key={p.id} className="flex items-center justify-between gap-2 py-1.5">
               <span className="truncate">
-                {p.name} <span className="text-white/40">({p.email})</span>
+                {p.name} <span className="text-white/40">({p.phone ?? "sin teléfono"})</span>
               </span>
               <span className="flex shrink-0 gap-2">
                 <button
