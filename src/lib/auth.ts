@@ -1,0 +1,68 @@
+import { cookies } from "next/headers";
+import { eq } from "drizzle-orm";
+import { db } from "@/db/client";
+import { participants, sessions } from "@/db/schema";
+import { randomToken } from "@/lib/crypto";
+
+const COOKIE_NAME = "empeno_session";
+const SESION_DIAS = 60; // cubre todo el calendario (sorteo → cena) con margen
+
+/**
+ * El único "login" que existe: el enlace personal de cada participante
+ * (participants.accessToken), que las organizadoras le mandan por WhatsApp.
+ * No hay email ni contraseña. El token es largo, aleatorio y NO caduca ni se
+ * gasta con el uso: si alguien pierde la sesión, solo tiene que volver a
+ * pulsar el mismo enlace guardado en su WhatsApp.
+ */
+export async function accederConToken(token: string): Promise<boolean> {
+  const participante = db.select().from(participants).where(eq(participants.accessToken, token)).get();
+  if (!participante) return false;
+
+  const sessionToken = randomToken();
+  const expiresAt = new Date(Date.now() + SESION_DIAS * 86_400_000).toISOString();
+  db.insert(sessions).values({ token: sessionToken, participantId: participante.id, expiresAt }).run();
+
+  const jar = await cookies();
+  jar.set(COOKIE_NAME, sessionToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    expires: new Date(expiresAt),
+  });
+
+  return true;
+}
+
+export async function sesionActual() {
+  const jar = await cookies();
+  const token = jar.get(COOKIE_NAME)?.value;
+  if (!token) return null;
+
+  const sesion = db.select().from(sessions).where(eq(sessions.token, token)).get();
+  if (!sesion || new Date(sesion.expiresAt).getTime() < Date.now()) return null;
+
+  const participante = db
+    .select()
+    .from(participants)
+    .where(eq(participants.id, sesion.participantId))
+    .get();
+  return participante ?? null;
+}
+
+export async function cerrarSesion() {
+  const jar = await cookies();
+  const token = jar.get(COOKIE_NAME)?.value;
+  if (token) {
+    db.delete(sessions).where(eq(sessions.token, token)).run();
+  }
+  jar.delete(COOKIE_NAME);
+}
+
+export function esAdmin(email: string): boolean {
+  const admins = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  return admins.includes(email.trim().toLowerCase());
+}

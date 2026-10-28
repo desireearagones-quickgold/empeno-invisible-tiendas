@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  /* Colores de marca Quickgold, tomados del logo (icono ">" dorado + texto
+     casi negro) en la captura de la herramienta de proyectos. Son una
+     estimación visual de una captura pequeña, no un HEX exacto de manual de
+     marca: si hay un brandbook con los valores oficiales, mejor usar esos. */
+  --color-dorado: #e0982f;
+  --color-dorado-oscuro: #b3751f;
+  --color-negro: #1a1a1a;
+  --color-blanco: #ffffff;
+  --color-crema: #f3ead9;
+
+  --color-fondo: var(--color-negro);
+  --color-texto: var(--color-blanco);
+}
+
+@theme inline {
+  --color-dorado: var(--color-dorado);
+  --color-dorado-oscuro: var(--color-dorado-oscuro);
+  --color-negro: var(--color-negro);
+  --color-blanco: var(--color-blanco);
+  --color-crema: var(--color-crema);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-documento: var(--font-documento);
+}
+
+body {
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+.documento {
+  font-family: var(--font-documento), "Courier New", monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* El contrato y el certificado se imprimen en papel/PDF: fondo blanco, sin
+   relleno de página negro desperdiciando tinta, solo la tarjeta del
+   documento. */
+@media print {
+  body {
+    background: #ffffff !important;
+  }
+  main {
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+}
