@@ -1,15 +1,15 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import path from "node:path";
-import fs from "node:fs";
+import postgres from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
 import * as schema from "./schema";
 
-const dbPath = process.env.DATABASE_URL ?? path.join(process.cwd(), "data", "empeno.sqlite3");
-fs.mkdirSync(path.join(process.cwd(), "data"), { recursive: true });
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("Falta DATABASE_URL (la conexión a Postgres).");
+}
 
-const sqlite = new Database(dbPath);
-sqlite.pragma("journal_mode = WAL");
-sqlite.pragma("foreign_keys = ON");
+// prepare: false porque Neon usa un pooler (pgbouncer) en modo transacción,
+// que no es compatible con sentencias preparadas (lo pide la propia Neon).
+const sql = postgres(connectionString, { ssl: "require", prepare: false });
 
-export const db = drizzle(sqlite, { schema });
-export { sqlite };
+export const db = drizzle(sql, { schema });
+export { sql };

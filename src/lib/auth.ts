@@ -15,12 +15,12 @@ const SESION_DIAS = 60; // cubre todo el calendario (sorteo → cena) con margen
  * pulsar el mismo enlace guardado en su WhatsApp.
  */
 export async function accederConToken(token: string): Promise<boolean> {
-  const participante = db.select().from(participants).where(eq(participants.accessToken, token)).get();
+  const [participante] = await db.select().from(participants).where(eq(participants.accessToken, token));
   if (!participante) return false;
 
   const sessionToken = randomToken();
   const expiresAt = new Date(Date.now() + SESION_DIAS * 86_400_000).toISOString();
-  db.insert(sessions).values({ token: sessionToken, participantId: participante.id, expiresAt }).run();
+  await db.insert(sessions).values({ token: sessionToken, participantId: participante.id, expiresAt });
 
   const jar = await cookies();
   jar.set(COOKIE_NAME, sessionToken, {
@@ -39,14 +39,13 @@ export async function sesionActual() {
   const token = jar.get(COOKIE_NAME)?.value;
   if (!token) return null;
 
-  const sesion = db.select().from(sessions).where(eq(sessions.token, token)).get();
+  const [sesion] = await db.select().from(sessions).where(eq(sessions.token, token));
   if (!sesion || new Date(sesion.expiresAt).getTime() < Date.now()) return null;
 
-  const participante = db
+  const [participante] = await db
     .select()
     .from(participants)
-    .where(eq(participants.id, sesion.participantId))
-    .get();
+    .where(eq(participants.id, sesion.participantId));
   return participante ?? null;
 }
 
@@ -54,7 +53,7 @@ export async function cerrarSesion() {
   const jar = await cookies();
   const token = jar.get(COOKIE_NAME)?.value;
   if (token) {
-    db.delete(sessions).where(eq(sessions.token, token)).run();
+    await db.delete(sessions).where(eq(sessions.token, token));
   }
   jar.delete(COOKIE_NAME);
 }

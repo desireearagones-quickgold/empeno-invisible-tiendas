@@ -16,8 +16,8 @@ export async function POST(req: NextRequest) {
   }
 
   const hash = hashId(participantId);
-  const entrante = db.select().from(assignments).where(eq(assignments.receiverHash, hash)).get(); // X -> saliente
-  const saliente = db.select().from(assignments).where(eq(assignments.giverHash, hash)).get(); // saliente -> Y
+  const [entrante] = await db.select().from(assignments).where(eq(assignments.receiverHash, hash)); // X -> saliente
+  const [saliente] = await db.select().from(assignments).where(eq(assignments.giverHash, hash)); // saliente -> Y
 
   if (!entrante || !saliente) {
     return NextResponse.json({ error: "Ese participante no tiene pareja asignada." }, { status: 404 });
@@ -25,19 +25,19 @@ export async function POST(req: NextRequest) {
 
   // X ahora regala a Y. No hace falta descifrar ni X ni Y: reutilizamos los
   // bloques cifrados que ya existían de cada uno.
-  db.transaction((tx) => {
+  await db.transaction(async (tx) => {
     // Primero se borra la fila saliente: si no, el receiver_hash que vamos a
     // reasignar a "entrante" todavía estaría ocupado por ella (UNIQUE).
-    tx.delete(assignments).where(eq(assignments.id, saliente.id)).run();
-    tx.update(assignments)
+    await tx.delete(assignments).where(eq(assignments.id, saliente.id));
+    await tx
+      .update(assignments)
       .set({ receiverHash: saliente.receiverHash, receiverEnc: saliente.receiverEnc })
-      .where(eq(assignments.id, entrante.id))
-      .run();
+      .where(eq(assignments.id, entrante.id));
   });
 
   // Avisamos solo a X (su contrato / joya ha cambiado).
   const xId = decryptId(entrante.giverEnc);
-  const x = db.select().from(participants).where(eq(participants.id, xId)).get();
+  const [x] = await db.select().from(participants).where(eq(participants.id, xId));
   if (x) {
     const url = `${process.env.APP_URL}/contrato`;
     await enviarAviso(

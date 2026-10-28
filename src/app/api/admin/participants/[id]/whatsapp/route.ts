@@ -10,7 +10,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if ("error" in ctx) return ctx.error;
 
   const { id } = await params;
-  const participante = db.select().from(participants).where(eq(participants.id, id)).get();
+  const [participante] = await db.select().from(participants).where(eq(participants.id, id));
   if (!participante) return NextResponse.json({ error: "No existe ese participante." }, { status: 404 });
   if (!participante.phone) {
     return NextResponse.json({ error: "Ese participante no tiene teléfono guardado." }, { status: 400 });

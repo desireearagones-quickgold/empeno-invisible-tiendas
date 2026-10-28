@@ -13,8 +13,8 @@ export type PuestoRanking = {
   mejoresReseñas: string[];
 };
 
-export function calcularRanking(): PuestoRanking[] {
-  const todosLosRegalos = db
+export async function calcularRanking(): Promise<PuestoRanking[]> {
+  const todosLosRegalos = await db
     .select({
       id: gifts.id,
       title: gifts.title,
@@ -23,36 +23,33 @@ export function calcularRanking(): PuestoRanking[] {
       receiverName: participants.name,
     })
     .from(gifts)
-    .leftJoin(participants, eq(gifts.receiverId, participants.id))
-    .all();
+    .leftJoin(participants, eq(gifts.receiverId, participants.id));
 
-  const puestos = todosLosRegalos.map((regalo) => {
-    const reseñasRegalo = db
-      .select()
-      .from(reviews)
-      .where(eq(reviews.giftId, regalo.id))
-      .all()
-      .filter((r) => !r.hidden);
+  const puestos = await Promise.all(
+    todosLosRegalos.map(async (regalo) => {
+      const reseñasRegaloTodas = await db.select().from(reviews).where(eq(reviews.giftId, regalo.id));
+      const reseñasRegalo = reseñasRegaloTodas.filter((r) => !r.hidden);
 
-    const totalQuilates = reseñasRegalo.reduce((acc, r) => acc + r.quilates, 0);
-    const media = reseñasRegalo.length ? totalQuilates / reseñasRegalo.length : 0;
-    const mejoresReseñas = reseñasRegalo
-      .filter((r) => r.comment)
-      .sort((a, b) => b.quilates - a.quilates)
-      .slice(0, 3)
-      .map((r) => r.comment as string);
+      const totalQuilates = reseñasRegalo.reduce((acc, r) => acc + r.quilates, 0);
+      const media = reseñasRegalo.length ? totalQuilates / reseñasRegalo.length : 0;
+      const mejoresReseñas = reseñasRegalo
+        .filter((r) => r.comment)
+        .sort((a, b) => b.quilates - a.quilates)
+        .slice(0, 3)
+        .map((r) => r.comment as string);
 
-    return {
-      giftId: regalo.id,
-      title: regalo.title,
-      photoUrl: regalo.photoUrl,
-      receiverName: regalo.receiverName,
-      totalQuilates,
-      media,
-      numReseñas: reseñasRegalo.length,
-      mejoresReseñas,
-    };
-  });
+      return {
+        giftId: regalo.id,
+        title: regalo.title,
+        photoUrl: regalo.photoUrl,
+        receiverName: regalo.receiverName,
+        totalQuilates,
+        media,
+        numReseñas: reseñasRegalo.length,
+        mejoresReseñas,
+      };
+    })
+  );
 
   return puestos.sort(
     (a, b) => b.totalQuilates - a.totalQuilates || b.media - a.media || b.numReseñas - a.numReseñas

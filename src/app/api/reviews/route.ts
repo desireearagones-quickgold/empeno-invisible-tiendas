@@ -14,13 +14,12 @@ export async function GET(req: NextRequest) {
   const giftId = req.nextUrl.searchParams.get("giftId");
   if (!giftId) return NextResponse.json({ error: "Falta giftId." }, { status: 400 });
 
-  const propia = db
+  const [propia] = await db
     .select()
     .from(reviews)
-    .where(and(eq(reviews.giftId, giftId), eq(reviews.reviewerHash, hashId(ctx.participante.id))))
-    .get();
+    .where(and(eq(reviews.giftId, giftId), eq(reviews.reviewerHash, hashId(ctx.participante.id))));
 
-  const publicas = db.select().from(reviews).where(and(eq(reviews.giftId, giftId), eq(reviews.hidden, false))).all();
+  const publicas = await db.select().from(reviews).where(and(eq(reviews.giftId, giftId), eq(reviews.hidden, false)));
 
   return NextResponse.json({ miReseña: propia ?? null, reseñas: publicas });
 }
@@ -42,40 +41,36 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Reseña no válida." }, { status: 400 });
   }
 
-  const gift = db.select().from(gifts).where(eq(gifts.id, giftId)).get();
+  const [gift] = await db.select().from(gifts).where(eq(gifts.id, giftId));
   if (!gift) return NextResponse.json({ error: "Ese regalo no existe." }, { status: 404 });
 
   const reviewerHash = hashId(ctx.participante.id);
 
-  const asignacionDelRegalo = db
+  const [asignacionDelRegalo] = await db
     .select()
     .from(assignments)
-    .where(eq(assignments.receiverHash, hashId(gift.receiverId)))
-    .get();
+    .where(eq(assignments.receiverHash, hashId(gift.receiverId)));
 
   if (asignacionDelRegalo?.giverHash === reviewerHash) {
     return NextResponse.json({ error: "No puedes tasar tu propia pieza." }, { status: 403 });
   }
 
-  const existente = db
+  const [existente] = await db
     .select()
     .from(reviews)
-    .where(and(eq(reviews.giftId, giftId), eq(reviews.reviewerHash, reviewerHash)))
-    .get();
+    .where(and(eq(reviews.giftId, giftId), eq(reviews.reviewerHash, reviewerHash)));
 
   if (existente) {
-    db.update(reviews).set({ quilates, comment }).where(eq(reviews.id, existente.id)).run();
+    await db.update(reviews).set({ quilates, comment }).where(eq(reviews.id, existente.id));
   } else {
-    db.insert(reviews)
-      .values({
-        id: crypto.randomUUID(),
-        giftId,
-        reviewerHash,
-        quilates,
-        comment,
-        createdAt: new Date().toISOString(),
-      })
-      .run();
+    await db.insert(reviews).values({
+      id: crypto.randomUUID(),
+      giftId,
+      reviewerHash,
+      quilates,
+      comment,
+      createdAt: new Date().toISOString(),
+    });
   }
 
   return NextResponse.json({ ok: true, mensaje: "Tasación registrada. Tu secreto está a salvo en la cámara acorazada." });

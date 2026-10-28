@@ -1,6 +1,6 @@
-import { sqliteTable, text, integer, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, boolean, jsonb, uniqueIndex } from "drizzle-orm/pg-core";
 
-export const participants = sqliteTable("participants", {
+export const participants = pgTable("participants", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
@@ -14,7 +14,7 @@ export const participants = sqliteTable("participants", {
   createdAt: text("created_at").notNull(),
 });
 
-export const assignments = sqliteTable("assignments", {
+export const assignments = pgTable("assignments", {
   id: text("id").primaryKey(),
   giverHash: text("giver_hash").notNull().unique(),
   receiverEnc: text("receiver_enc").notNull(),
@@ -24,13 +24,13 @@ export const assignments = sqliteTable("assignments", {
   contractOpenedAt: text("contract_opened_at"),
 });
 
-export const fichas = sqliteTable(
+export const fichas = pgTable(
   "fichas",
   {
     id: text("id").primaryKey(),
     authorHash: text("author_hash").notNull(),
     number: integer("number").notNull(), // 1..3
-    fields: text("fields", { mode: "json" }).notNull().$type<Record<string, string>>(),
+    fields: jsonb("fields").notNull().$type<Record<string, string>>(),
     updatedAt: text("updated_at").notNull(),
   },
   (t) => ({
@@ -38,7 +38,7 @@ export const fichas = sqliteTable(
   })
 );
 
-export const fichaOpens = sqliteTable(
+export const fichaOpens = pgTable(
   "ficha_opens",
   {
     receiverHash: text("receiver_hash").notNull(),
@@ -50,7 +50,7 @@ export const fichaOpens = sqliteTable(
   })
 );
 
-export const gifts = sqliteTable("gifts", {
+export const gifts = pgTable("gifts", {
   id: text("id").primaryKey(),
   receiverId: text("receiver_id").notNull().unique(),
   title: text("title").notNull(),
@@ -58,7 +58,7 @@ export const gifts = sqliteTable("gifts", {
   createdAt: text("created_at").notNull(),
 });
 
-export const reviews = sqliteTable(
+export const reviews = pgTable(
   "reviews",
   {
     id: text("id").primaryKey(),
@@ -66,7 +66,7 @@ export const reviews = sqliteTable(
     reviewerHash: text("reviewer_hash").notNull(),
     quilates: integer("quilates").notNull(), // 1..5
     comment: text("comment"),
-    hidden: integer("hidden", { mode: "boolean" }).notNull().default(false),
+    hidden: boolean("hidden").notNull().default(false),
     createdAt: text("created_at").notNull(),
   },
   (t) => ({
@@ -74,12 +74,12 @@ export const reviews = sqliteTable(
   })
 );
 
-export const config = sqliteTable("config", {
+export const config = pgTable("config", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),
 });
 
-export const sessions = sqliteTable("sessions", {
+export const sessions = pgTable("sessions", {
   token: text("token").primaryKey(),
   participantId: text("participant_id").notNull(),
   expiresAt: text("expires_at").notNull(),

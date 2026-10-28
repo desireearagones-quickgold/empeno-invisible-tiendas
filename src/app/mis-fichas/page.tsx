@@ -15,20 +15,21 @@ export default async function MisFichas() {
   const authorHash = hashId(sesion.id);
 
   const numeros = [1, 2, 3] as const;
-  const estado = numeros.map((n) => {
-    const existente = db
-      .select()
-      .from(fichas)
-      .where(and(eq(fichas.authorHash, authorHash), eq(fichas.number, n)))
-      .get();
-    return {
-      numero: n,
-      cerrada: fichaCerrada(n),
-      fechaDesbloqueo: cal.fichas[n - 1].toISOString(),
-      fechaLimite: cal.limiteFicha[n - 1].toISOString(),
-      campos: (existente?.fields as Record<string, string>) ?? null,
-    };
-  });
+  const estado = await Promise.all(
+    numeros.map(async (n) => {
+      const [existente] = await db
+        .select()
+        .from(fichas)
+        .where(and(eq(fichas.authorHash, authorHash), eq(fichas.number, n)));
+      return {
+        numero: n,
+        cerrada: fichaCerrada(n),
+        fechaDesbloqueo: cal.fichas[n - 1].toISOString(),
+        fechaLimite: cal.limiteFicha[n - 1].toISOString(),
+        campos: (existente?.fields as Record<string, string>) ?? null,
+      };
+    })
+  );
 
   return (
     <main className="flex-1 p-6 max-w-3xl mx-auto w-full space-y-6">

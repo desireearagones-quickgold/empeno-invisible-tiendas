@@ -8,7 +8,7 @@ export async function GET() {
   const ctx = await requerirAdmin();
   if ("error" in ctx) return ctx.error;
 
-  const lista = db
+  const lista = await db
     .select({
       id: reviews.id,
       comment: reviews.comment,
@@ -17,8 +17,7 @@ export async function GET() {
       giftTitle: gifts.title,
     })
     .from(reviews)
-    .leftJoin(gifts, eq(reviews.giftId, gifts.id))
-    .all();
+    .leftJoin(gifts, eq(reviews.giftId, gifts.id));
 
   // Nunca se expone reviewerHash ni nada que identifique al autor.
   return NextResponse.json({ reviews: lista });

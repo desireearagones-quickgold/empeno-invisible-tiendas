@@ -28,7 +28,7 @@ export default async function Contrato() {
     );
   }
 
-  const sorteoHecho = db.select().from(config).where(eq(config.key, "sorteo_hecho")).get();
+  const [sorteoHecho] = await db.select().from(config).where(eq(config.key, "sorteo_hecho"));
   if (sorteoHecho?.value !== "true") {
     return (
       <main className="flex-1 flex items-center justify-center p-6 text-center text-white/70">
@@ -38,7 +38,7 @@ export default async function Contrato() {
   }
 
   const giverHash = hashId(sesion.id);
-  const asignacion = db.select().from(assignments).where(eq(assignments.giverHash, giverHash)).get();
+  const [asignacion] = await db.select().from(assignments).where(eq(assignments.giverHash, giverHash));
 
   if (!asignacion) {
     return (
@@ -49,16 +49,15 @@ export default async function Contrato() {
   }
 
   const receptorId = decryptId(asignacion.receiverEnc);
-  const receptor = db.select().from(participants).where(eq(participants.id, receptorId)).get();
+  const [receptor] = await db.select().from(participants).where(eq(participants.id, receptorId));
 
   // Mi "contrato de empeño" de verdad: el que recibo YO como destinatario de
   // otra persona. No dice quién me regala (nunca se descifra ni se consulta
   // ese dato aquí), solo mi propio lote para recoger el paquete.
-  const miTicket = db
+  const [miTicket] = await db
     .select()
     .from(assignments)
-    .where(eq(assignments.receiverHash, hashId(sesion.id)))
-    .get();
+    .where(eq(assignments.receiverHash, hashId(sesion.id)));
 
   return (
     <main className="flex-1 p-6">

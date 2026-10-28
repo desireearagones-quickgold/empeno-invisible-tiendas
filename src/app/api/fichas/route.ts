@@ -12,7 +12,7 @@ export async function GET() {
   const ctx = await requerirSesion();
   if ("error" in ctx) return ctx.error;
 
-  const mias = db.select().from(fichas).where(eq(fichas.authorHash, hashId(ctx.participante.id))).all();
+  const mias = await db.select().from(fichas).where(eq(fichas.authorHash, hashId(ctx.participante.id)));
   return NextResponse.json({ fichas: mias });
 }
 
@@ -40,27 +40,24 @@ export async function POST(req: NextRequest) {
   }
 
   const authorHash = hashId(ctx.participante.id);
-  const existente = db
+  const [existente] = await db
     .select()
     .from(fichas)
-    .where(and(eq(fichas.authorHash, authorHash), eq(fichas.number, numero)))
-    .get();
+    .where(and(eq(fichas.authorHash, authorHash), eq(fichas.number, numero)));
 
   if (existente) {
-    db.update(fichas)
+    await db
+      .update(fichas)
       .set({ fields: limpio, updatedAt: new Date().toISOString() })
-      .where(eq(fichas.id, existente.id))
-      .run();
+      .where(eq(fichas.id, existente.id));
   } else {
-    db.insert(fichas)
-      .values({
-        id: crypto.randomUUID(),
-        authorHash,
-        number: numero,
-        fields: limpio,
-        updatedAt: new Date().toISOString(),
-      })
-      .run();
+    await db.insert(fichas).values({
+      id: crypto.randomUUID(),
+      authorHash,
+      number: numero,
+      fields: limpio,
+      updatedAt: new Date().toISOString(),
+    });
   }
 
   return NextResponse.json({ ok: true, mensaje: "Tasación archivada. Nadie sospecha nada." });

@@ -19,12 +19,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const yaHecho = db.select().from(config).where(eq(config.key, "sorteo_hecho")).get();
+  const [yaHecho] = await db.select().from(config).where(eq(config.key, "sorteo_hecho"));
   if (yaHecho?.value === "true") {
     return NextResponse.json({ error: "El sorteo ya se ha ejecutado. No se puede repetir." }, { status: 409 });
   }
 
-  const todos = db.select().from(participants).all();
+  const todos = await db.select().from(participants);
   if (todos.length < 3) {
     return NextResponse.json({ error: "Hacen falta al menos 3 participantes." }, { status: 400 });
   }
@@ -32,32 +32,30 @@ export async function POST(req: NextRequest) {
   const parejas = generarCadena(todos.map((p) => p.id));
   const numerosUsados = new Set<string>();
 
-  db.transaction((tx) => {
+  await db.transaction(async (tx) => {
     for (const { giver, receiver } of parejas) {
       let contractNumber = randomContractNumber();
       while (numerosUsados.has(contractNumber)) contractNumber = randomContractNumber();
       numerosUsados.add(contractNumber);
 
-      tx.insert(assignments)
-        .values({
-          id: crypto.randomUUID(),
-          giverHash: hashId(giver),
-          giverEnc: encryptId(giver),
-          receiverHash: hashId(receiver),
-          receiverEnc: encryptId(receiver),
-          contractNumber,
-        })
-        .run();
+      await tx.insert(assignments).values({
+        id: crypto.randomUUID(),
+        giverHash: hashId(giver),
+        giverEnc: encryptId(giver),
+        receiverHash: hashId(receiver),
+        receiverEnc: encryptId(receiver),
+        contractNumber,
+      });
     }
 
-    tx.insert(config)
+    await tx
+      .insert(config)
       .values({ key: "sorteo_hecho", value: "true" })
-      .onConflictDoUpdate({ target: config.key, set: { value: "true" } })
-      .run();
-    tx.insert(config)
+      .onConflictDoUpdate({ target: config.key, set: { value: "true" } });
+    await tx
+      .insert(config)
       .values({ key: "sorteo_fecha", value: new Date().toISOString() })
-      .onConflictDoUpdate({ target: config.key, set: { value: new Date().toISOString() } })
-      .run();
+      .onConflictDoUpdate({ target: config.key, set: { value: new Date().toISOString() } });
   });
 
   return NextResponse.json({ ok: true, parejas: parejas.length });

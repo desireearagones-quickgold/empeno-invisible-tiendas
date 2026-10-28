@@ -18,7 +18,7 @@ export async function GET() {
   const ctx = await requerirSesion();
   if ("error" in ctx) return ctx.error;
 
-  const lista = db
+  const lista = await db
     .select({
       id: gifts.id,
       title: gifts.title,
@@ -27,8 +27,7 @@ export async function GET() {
       receiverName: participants.name,
     })
     .from(gifts)
-    .leftJoin(participants, eq(gifts.receiverId, participants.id))
-    .all();
+    .leftJoin(participants, eq(gifts.receiverId, participants.id));
 
   return NextResponse.json({ gifts: lista });
 }
@@ -62,23 +61,21 @@ export async function POST(req: NextRequest) {
     photoUrl = `/uploads/${nombre}`;
   }
 
-  const existente = db.select().from(gifts).where(eq(gifts.receiverId, ctx.participante.id)).get();
+  const [existente] = await db.select().from(gifts).where(eq(gifts.receiverId, ctx.participante.id));
 
   if (existente) {
-    db.update(gifts)
+    await db
+      .update(gifts)
       .set({ title, ...(photoUrl ? { photoUrl } : {}) })
-      .where(eq(gifts.id, existente.id))
-      .run();
+      .where(eq(gifts.id, existente.id));
   } else {
-    db.insert(gifts)
-      .values({
-        id: crypto.randomUUID(),
-        receiverId: ctx.participante.id,
-        title,
-        photoUrl,
-        createdAt: new Date().toISOString(),
-      })
-      .run();
+    await db.insert(gifts).values({
+      id: crypto.randomUUID(),
+      receiverId: ctx.participante.id,
+      title,
+      photoUrl,
+      createdAt: new Date().toISOString(),
+    });
   }
 
   return NextResponse.json({ ok: true });

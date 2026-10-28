@@ -11,6 +11,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params;
   const { hidden } = await req.json().catch(() => ({ hidden: true }));
 
-  db.update(reviews).set({ hidden: Boolean(hidden) }).where(eq(reviews.id, id)).run();
+  await db.update(reviews).set({ hidden: Boolean(hidden) }).where(eq(reviews.id, id));
   return NextResponse.json({ ok: true });
 }

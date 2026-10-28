@@ -3,15 +3,16 @@ import { db } from "@/db/client";
 import { config } from "@/db/schema";
 import type { PuestoRanking } from "@/lib/ranking";
 
-export function modoDemoActivo(): boolean {
-  return db.select().from(config).where(eq(config.key, "modo_demo")).get()?.value === "true";
+export async function modoDemoActivo(): Promise<boolean> {
+  const [fila] = await db.select().from(config).where(eq(config.key, "modo_demo"));
+  return fila?.value === "true";
 }
 
-export function activarModoDemo(activar: boolean) {
-  db.insert(config)
+export async function activarModoDemo(activar: boolean) {
+  await db
+    .insert(config)
     .values({ key: "modo_demo", value: String(activar) })
-    .onConflictDoUpdate({ target: config.key, set: { value: String(activar) } })
-    .run();
+    .onConflictDoUpdate({ target: config.key, set: { value: String(activar) } });
 }
 
 export const RANKING_DEMO: PuestoRanking[] = [

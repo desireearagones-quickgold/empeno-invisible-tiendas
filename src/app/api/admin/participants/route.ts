@@ -16,7 +16,7 @@ export async function GET() {
   const ctx = await requerirAdmin();
   if ("error" in ctx) return ctx.error;
 
-  return NextResponse.json({ participants: db.select().from(participants).all() });
+  return NextResponse.json({ participants: await db.select().from(participants) });
 }
 
 export async function POST(req: NextRequest) {
@@ -41,7 +41,8 @@ export async function POST(req: NextRequest) {
     for (const fila of filas) {
       const [name, email, phone] = fila.split(",").map((c) => c.trim());
       if (!name || !email || name.toLowerCase() === "name") continue;
-      db.insert(participants)
+      await db
+        .insert(participants)
         .values({
           id: crypto.randomUUID(),
           name,
@@ -50,8 +51,7 @@ export async function POST(req: NextRequest) {
           accessToken: randomToken(),
           createdAt: new Date().toISOString(),
         })
-        .onConflictDoNothing()
-        .run();
+        .onConflictDoNothing();
       añadidos++;
     }
     return NextResponse.json({ ok: true, añadidos });
@@ -61,16 +61,14 @@ export async function POST(req: NextRequest) {
   if (!body?.name || !body?.email) {
     return NextResponse.json({ error: "Faltan nombre o email." }, { status: 400 });
   }
-  db.insert(participants)
-    .values({
-      id: crypto.randomUUID(),
-      name: body.name,
-      email: String(body.email).toLowerCase(),
-      phone: limpiarTelefono(body.phone),
-      accessToken: randomToken(),
-      createdAt: new Date().toISOString(),
-    })
-    .run();
+  await db.insert(participants).values({
+    id: crypto.randomUUID(),
+    name: body.name,
+    email: String(body.email).toLowerCase(),
+    phone: limpiarTelefono(body.phone),
+    accessToken: randomToken(),
+    createdAt: new Date().toISOString(),
+  });
 
   return NextResponse.json({ ok: true });
 }
@@ -82,10 +80,10 @@ export async function DELETE(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Falta id." }, { status: 400 });
 
-  const sorteoHecho = db.select().from(config).where(eq(config.key, "sorteo_hecho")).get()?.value === "true";
-  if (sorteoHecho) {
+  const [sorteoHechoFila] = await db.select().from(config).where(eq(config.key, "sorteo_hecho"));
+  if (sorteoHechoFila?.value === "true") {
     const hash = hashId(id);
-    const enCadena = db.select().from(assignments).where(eq(assignments.giverHash, hash)).get();
+    const [enCadena] = await db.select().from(assignments).where(eq(assignments.giverHash, hash));
     if (enCadena) {
       return NextResponse.json(
         { error: "Ya tiene pareja asignada. Usa \"Reparar cadena\" antes de borrarlo." },
@@ -94,6 +92,6 @@ export async function DELETE(req: NextRequest) {
     }
   }
 
-  db.delete(participants).where(eq(participants.id, id)).run();
+  await db.delete(participants).where(eq(participants.id, id));
   return NextResponse.json({ ok: true });
 }

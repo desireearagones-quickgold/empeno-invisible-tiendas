@@ -19,21 +19,20 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ nu
   }
 
   const receiverHash = hashId(ctx.participante.id);
-  const miAsignacion = db.select().from(assignments).where(eq(assignments.receiverHash, receiverHash)).get();
+  const [miAsignacion] = await db.select().from(assignments).where(eq(assignments.receiverHash, receiverHash));
   if (!miAsignacion) {
     return NextResponse.json({ error: "No hay sorteo asignado todavía." }, { status: 404 });
   }
 
-  const ficha = db
+  const [ficha] = await db
     .select()
     .from(fichas)
-    .where(and(eq(fichas.authorHash, miAsignacion.giverHash), eq(fichas.number, numero)))
-    .get();
+    .where(and(eq(fichas.authorHash, miAsignacion.giverHash), eq(fichas.number, numero)));
 
-  db.insert(fichaOpens)
+  await db
+    .insert(fichaOpens)
     .values({ receiverHash, number: numero, openedAt: new Date().toISOString() })
-    .onConflictDoNothing()
-    .run();
+    .onConflictDoNothing();
 
   if (!ficha) {
     return NextResponse.json({ hayFicha: false, mensaje: "El tasador está de vacaciones. Esta semana no hay pista." });

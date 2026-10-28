@@ -9,10 +9,10 @@ export async function POST() {
   const ctx = await requerirSesion();
   if ("error" in ctx) return ctx.error;
 
-  db.update(assignments)
+  await db
+    .update(assignments)
     .set({ contractOpenedAt: new Date().toISOString() })
-    .where(eq(assignments.giverHash, hashId(ctx.participante.id)))
-    .run();
+    .where(eq(assignments.giverHash, hashId(ctx.participante.id)));
 
   return NextResponse.json({ ok: true });
 }

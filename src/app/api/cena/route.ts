@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   if ("error" in ctx) return ctx.error;
 
   const { pin } = await req.json().catch(() => ({}));
-  const demo = modoDemoActivo();
+  const demo = await modoDemoActivo();
 
   if (!demo && !cenaAbierta()) {
     return NextResponse.json({ error: "Todavía no es la hora de los resultados." }, { status: 403 });
@@ -19,5 +19,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "PIN incorrecto." }, { status: 403 });
   }
 
-  return NextResponse.json({ ranking: demo ? RANKING_DEMO : calcularRanking() });
+  return NextResponse.json({ ranking: demo ? RANKING_DEMO : await calcularRanking() });
 }

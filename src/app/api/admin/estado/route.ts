@@ -8,15 +8,16 @@ export async function GET() {
   const ctx = await requerirAdmin();
   if ("error" in ctx) return ctx.error;
 
-  const totalParticipantes = db.select().from(participants).all().length;
-  const sorteoHecho = db.select().from(config).where(eq(config.key, "sorteo_hecho")).get()?.value === "true";
-  const todasLasFichas = db.select().from(fichas).all();
+  const totalParticipantes = (await db.select().from(participants)).length;
+  const [sorteoHechoFila] = await db.select().from(config).where(eq(config.key, "sorteo_hecho"));
+  const sorteoHecho = sorteoHechoFila?.value === "true";
+  const todasLasFichas = await db.select().from(fichas);
   const fichasPorNumero = ([1, 2, 3] as const).map(
     (n) => todasLasFichas.filter((f) => f.number === n).length
   );
-  const regalosConFoto = db.select().from(gifts).all().filter((g) => g.photoUrl).length;
-  const reseñasTotales = db.select().from(reviews).all().length;
-  const totalAsignaciones = db.select().from(assignments).all().length;
+  const regalosConFoto = (await db.select().from(gifts)).filter((g) => g.photoUrl).length;
+  const reseñasTotales = (await db.select().from(reviews)).length;
+  const totalAsignaciones = (await db.select().from(assignments)).length;
 
   return NextResponse.json({
     totalParticipantes,

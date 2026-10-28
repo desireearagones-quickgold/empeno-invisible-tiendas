@@ -21,11 +21,10 @@ export default async function Resenas() {
     );
   }
 
-  const miAsignacion = db
+  const [miAsignacion] = await db
     .select()
     .from(assignments)
-    .where(eq(assignments.receiverHash, hashId(sesion.id)))
-    .get();
+    .where(eq(assignments.receiverHash, hashId(sesion.id)));
 
   return (
     <main className="flex-1 p-6 max-w-3xl mx-auto w-full space-y-8">

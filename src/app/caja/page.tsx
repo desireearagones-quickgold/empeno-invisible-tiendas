@@ -13,39 +13,39 @@ export default async function Caja() {
 
   const cal = calendario();
   const receiverHash = hashId(sesion.id);
-  const miAsignacion = db.select().from(assignments).where(eq(assignments.receiverHash, receiverHash)).get();
+  const [miAsignacion] = await db.select().from(assignments).where(eq(assignments.receiverHash, receiverHash));
 
   const numeros = [1, 2, 3] as const;
-  const compartimentos = numeros.map((n) => {
-    const desbloqueada = fichaDesbloqueada(n);
-    let camposGuardados: Record<string, string> | null = null;
-    let visto = false;
+  const compartimentos = await Promise.all(
+    numeros.map(async (n) => {
+      const desbloqueada = fichaDesbloqueada(n);
+      let camposGuardados: Record<string, string> | null = null;
+      let visto = false;
 
-    if (desbloqueada && miAsignacion) {
-      const ficha = db
-        .select()
-        .from(fichas)
-        .where(and(eq(fichas.authorHash, miAsignacion.giverHash), eq(fichas.number, n)))
-        .get();
-      camposGuardados = (ficha?.fields as Record<string, string>) ?? null;
+      if (desbloqueada && miAsignacion) {
+        const [ficha] = await db
+          .select()
+          .from(fichas)
+          .where(and(eq(fichas.authorHash, miAsignacion.giverHash), eq(fichas.number, n)));
+        camposGuardados = (ficha?.fields as Record<string, string>) ?? null;
 
-      const open = db
-        .select()
-        .from(fichaOpens)
-        .where(and(eq(fichaOpens.receiverHash, receiverHash), eq(fichaOpens.number, n)))
-        .get();
-      visto = Boolean(open);
-    }
+        const [open] = await db
+          .select()
+          .from(fichaOpens)
+          .where(and(eq(fichaOpens.receiverHash, receiverHash), eq(fichaOpens.number, n)));
+        visto = Boolean(open);
+      }
 
-    return {
-      numero: n,
-      desbloqueada,
-      fechaDesbloqueo: cal.fichas[n - 1].toISOString(),
-      hayFicha: camposGuardados !== null,
-      campos: camposGuardados,
-      visto,
-    };
-  });
+      return {
+        numero: n,
+        desbloqueada,
+        fechaDesbloqueo: cal.fichas[n - 1].toISOString(),
+        hayFicha: camposGuardados !== null,
+        campos: camposGuardados,
+        visto,
+      };
+    })
+  );
 
   return (
     <main className="flex-1 p-6 max-w-3xl mx-auto w-full space-y-6">
