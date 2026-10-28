@@ -3,15 +3,15 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-const ENLACES = [
-  { href: "/contrato", label: "Contrato" },
-  { href: "/mis-fichas", label: "Pistas" },
-  { href: "/caja", label: "Mi caja" },
-  { href: "/resenas", label: "Regalos" },
-  { href: "/cena", label: "Cena" },
-];
-
-export default function NavBar({ esAdmin }: { esAdmin: boolean }) {
+export default function NavBar({
+  esAdmin,
+  mostrarRegalos,
+  mostrarCena,
+}: {
+  esAdmin: boolean;
+  mostrarRegalos: boolean;
+  mostrarCena: boolean;
+}) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -21,10 +21,19 @@ export default function NavBar({ esAdmin }: { esAdmin: boolean }) {
     router.refresh();
   }
 
-  const enlaces = esAdmin ? [...ENLACES, { href: "/admin", label: "Admin" }] : ENLACES;
+  const enlaces = [
+    { href: "/contrato", label: "Contrato" },
+    { href: "/mis-fichas", label: "Pistas" },
+    { href: "/caja", label: "Mi caja" },
+    // No tiene sentido enseñar estos enlaces antes de que haya nada que ver
+    // ahí: solo confunde (la gente los pulsa y se encuentra un "cerrado").
+    ...(mostrarRegalos || esAdmin ? [{ href: "/resenas", label: "Regalos" }] : []),
+    ...(mostrarCena || esAdmin ? [{ href: "/cena", label: "Cena" }] : []),
+    ...(esAdmin ? [{ href: "/admin", label: "Admin" }] : []),
+  ];
 
   return (
-    <nav className="print:hidden flex items-center gap-1 overflow-x-auto border-b border-white/10 bg-black px-3 py-2 text-sm">
+    <nav className="print:hidden flex items-center gap-1 overflow-x-auto border-b border-white/10 bg-(--color-negro) px-3 py-2 text-sm">
       {enlaces.map((e) => (
         <Link
           key={e.href}

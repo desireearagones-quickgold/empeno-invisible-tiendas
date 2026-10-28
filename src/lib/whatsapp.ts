@@ -95,7 +95,7 @@ export async function enviarAvisoSorteo(telefono: string, enlacePersonal: string
  */
 export async function enviarAvisoSorteoConBoton(telefono: string, token: string) {
   return enviarWhatsApp(telefono, {
-    template: "amigo_invisible_v2",
+    template: "whats_amigo_invisible",
     lang: "es",
     botonSufijo: token,
   });
