@@ -98,8 +98,7 @@ export default function TarjetaFicha({
                 maxLength={MAX_CARACTERES_CAMPO}
                 value={valores[campo.clave] ?? ""}
                 onChange={(e) => setValores((v) => ({ ...v, [campo.clave]: e.target.value }))}
-                placeholder={campo.placeholder}
-                className="mt-1 w-full rounded border border-white/15 bg-black/30 px-2 py-1 text-sm placeholder:text-white/30 focus:border-(--color-dorado) focus:outline-none"
+                className="mt-1 w-full rounded border border-white/15 bg-black/30 px-2 py-1 text-sm focus:border-(--color-dorado) focus:outline-none"
               />
               <span className="mt-0.5 block text-xs text-white/30">Ej: {campo.placeholder}</span>
             </label>
