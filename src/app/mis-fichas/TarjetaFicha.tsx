@@ -24,12 +24,16 @@ export default function TarjetaFicha({
   );
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
+  // camposGuardados viene del servidor en la carga inicial: guardar no
+  // recarga la página, así que hay que llevar aparte si ya se ha guardado
+  // alguna vez en esta sesión, o el aviso de "Sin escribir" no cambiaría.
+  const [yaGuardada, setYaGuardada] = useState(Boolean(camposGuardados));
 
   const estado: Estado = cerrada
-    ? camposGuardados
+    ? yaGuardada
       ? "entregada"
       : "plazo-perdido"
-    : camposGuardados
+    : yaGuardada
       ? "guardada"
       : "sin-escribir";
 
@@ -51,6 +55,7 @@ export default function TarjetaFicha({
     });
     const data = await res.json();
     setMensaje(res.ok ? data.mensaje : data.error);
+    if (res.ok) setYaGuardada(true);
     setGuardando(false);
   }
 
