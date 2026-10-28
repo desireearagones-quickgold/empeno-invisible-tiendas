@@ -77,6 +77,31 @@ export const reviews = pgTable(
   })
 );
 
+// Valoraciones y respuestas a una reseña (no al regalo). A diferencia de las
+// reseñas, aquí sí se sabe quién es quién: es la página de resultados, para
+// después de que las reseñas ya están cerradas y no hace falta el anonimato.
+export const reviewRatings = pgTable(
+  "review_ratings",
+  {
+    id: text("id").primaryKey(),
+    reviewId: text("review_id").notNull(),
+    raterId: text("rater_id").notNull(),
+    quilates: integer("quilates").notNull(), // 1..5
+    createdAt: text("created_at").notNull(),
+  },
+  (t) => ({
+    reviewRaterIdx: uniqueIndex("review_ratings_review_rater_idx").on(t.reviewId, t.raterId),
+  })
+);
+
+export const reviewComments = pgTable("review_comments", {
+  id: text("id").primaryKey(),
+  reviewId: text("review_id").notNull(),
+  authorId: text("author_id").notNull(),
+  comment: text("comment").notNull(),
+  createdAt: text("created_at").notNull(),
+});
+
 export const config = pgTable("config", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),

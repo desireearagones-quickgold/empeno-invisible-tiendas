@@ -55,3 +55,8 @@ export function resenasAbiertas(ahora = new Date()): boolean {
   const c = calendario();
   return ahora >= c.entrega && ahora <= c.cierreResenas;
 }
+
+/** La página de resultados se abre en cuanto se cierran las reseñas. */
+export function resultadosAbiertos(ahora = new Date()): boolean {
+  return ahora > calendario().cierreResenas;
+}

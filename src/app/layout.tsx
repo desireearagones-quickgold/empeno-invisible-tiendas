@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { sesionActual, esAdmin } from "@/lib/auth";
-import { resenasAbiertas } from "@/lib/calendario";
+import { resenasAbiertas, resultadosAbiertos } from "@/lib/calendario";
 import NavBar from "@/components/NavBar";
 
 const inter = Inter({
@@ -27,7 +27,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="es" className={`${inter.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-(--color-fondo) text-(--color-texto)">
         {sesion && (
-          <NavBar esAdmin={esAdmin(sesion.phone)} mostrarRegalos={resenasAbiertas()} />
+          <NavBar
+            esAdmin={esAdmin(sesion.phone)}
+            mostrarRegalos={resenasAbiertas()}
+            mostrarResultados={resultadosAbiertos()}
+          />
         )}
         {children}
       </body>

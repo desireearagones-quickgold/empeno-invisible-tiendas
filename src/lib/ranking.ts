@@ -55,3 +55,25 @@ export async function calcularRanking(): Promise<PuestoRanking[]> {
     (a, b) => b.totalQuilates - a.totalQuilates || b.media - a.media || b.numReseñas - a.numReseñas
   );
 }
+
+export type ReseñaPublica = {
+  id: string;
+  quilates: number;
+  comment: string | null;
+  createdAt: string;
+};
+
+/** Las reseñas de un regalo, sin tocar quién las escribió (sigue anónimo). */
+export async function reseñasDeRegalo(giftId: string): Promise<ReseñaPublica[]> {
+  const filas = await db
+    .select({
+      id: reviews.id,
+      quilates: reviews.quilates,
+      comment: reviews.comment,
+      createdAt: reviews.createdAt,
+      hidden: reviews.hidden,
+    })
+    .from(reviews)
+    .where(eq(reviews.giftId, giftId));
+  return filas.filter((r) => !r.hidden).map(({ id, quilates, comment, createdAt }) => ({ id, quilates, comment, createdAt }));
+}
