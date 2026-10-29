@@ -14,11 +14,15 @@ import { enviarWhatsApp } from "@/lib/whatsapp";
 export const DESTINOS = ["caja", "mis-fichas", "resenas"] as const;
 export type Destino = (typeof DESTINOS)[number];
 
+// El idioma tiene que ser el que se eligió al crear la plantilla en Meta
+// (aunque el texto sea en castellano); si no, Meta dice que no existe.
+type Plantilla = { nombre: string; idioma: string };
+
 export const PLANTILLAS = {
-  pista: "nueva_pista",
-  recordatorio: "recordatorio_pista",
-  regalos: "abrir_regalos_2",
-} as const;
+  pista: { nombre: "nueva_pista", idioma: "es" },
+  recordatorio: { nombre: "recordatorio_pista", idioma: "es" },
+  regalos: { nombre: "abrir_regalos_2", idioma: "en" },
+} as const satisfies Record<string, Plantilla>;
 
 type Participante = typeof participants.$inferSelect;
 
@@ -26,7 +30,7 @@ type Aviso = {
   id: string;
   titulo: string;
   fecha: Date;
-  plantilla: string;
+  plantilla: Plantilla;
   destino: Destino;
   destinatarios: (todos: Participante[]) => Promise<Participante[]>;
 };
@@ -136,8 +140,8 @@ export async function procesarAvisos({ enviar, ahora = new Date() }: { enviar: b
           pendientes.slice(i, i + 6).map(async (p) => {
             try {
               await enviarWhatsApp(p.phone!, {
-                template: aviso.plantilla,
-                lang: "es",
+                template: aviso.plantilla.nombre,
+                lang: aviso.plantilla.idioma,
                 botonSufijo: `${aviso.destino}/${p.accessToken}`,
               });
               await db
