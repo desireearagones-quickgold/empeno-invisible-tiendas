@@ -36,7 +36,7 @@ export default async function Resultados() {
       <div className="text-center space-y-2">
         <p className="text-xs uppercase tracking-[0.3em] text-(--color-dorado)">Campeón del Mundo de los Pesos Quilate</p>
         <h1 className="text-2xl font-bold">{ganador.title}</h1>
-        <p className="text-white/60">para {ganador.receiverName ?? "—"}</p>
+        <p className="text-white/60">Lo recibió {ganador.receiverName ?? "—"}</p>
         {ganador.photoUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={ganador.photoUrl} alt={ganador.title} className="mx-auto h-56 rounded object-cover" />

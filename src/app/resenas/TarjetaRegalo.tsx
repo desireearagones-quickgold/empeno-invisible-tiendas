@@ -36,7 +36,7 @@ export default function TarjetaRegalo({
         <img src={regalo.photoUrl} alt={regalo.title} className="h-40 w-full rounded object-cover" />
       )}
       <p className="font-semibold">{regalo.title}</p>
-      <p className="text-xs text-white/50">para {regalo.receiverName ?? "—"}</p>
+      <p className="text-xs text-white/50">Lo recibió {regalo.receiverName ?? "—"}</p>
 
       {!abierta ? (
         <button onClick={() => setAbierta(true)} className="text-sm text-(--color-dorado) underline">
