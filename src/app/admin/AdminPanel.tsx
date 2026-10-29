@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { PuestoRanking } from "@/lib/ranking";
+import type { ResultadoAviso } from "@/lib/avisos";
 
 type Estado = {
   totalParticipantes: number;
@@ -15,8 +16,9 @@ type Estado = {
 type Participante = { id: string; name: string; email: string | null; phone: string | null; accessToken: string };
 type Reseña = { id: string; comment: string | null; quilates: number; hidden: boolean; giftTitle: string | null };
 
-export default function AdminPanel({ textos }: { textos: Record<string, string> }) {
+export default function AdminPanel() {
   const [estado, setEstado] = useState<Estado | null>(null);
+  const [avisos, setAvisos] = useState<ResultadoAviso[] | null>(null);
   const [participantes, setParticipantes] = useState<Participante[] | null>(null);
   const [reseñas, setReseñas] = useState<Reseña[] | null>(null);
   const [ranking, setRanking] = useState<PuestoRanking[] | null>(null);
@@ -30,6 +32,7 @@ export default function AdminPanel({ textos }: { textos: Record<string, string> 
     fetch("/api/admin/participants").then((r) => r.json()).then((d) => setParticipantes(d.participants));
     fetch("/api/admin/reviews").then((r) => r.json()).then((d) => setReseñas(d.reviews));
     fetch("/api/admin/ranking").then((r) => r.json()).then((d) => setRanking(d.ranking));
+    fetch("/api/admin/avisos").then((r) => r.json()).then((d) => setAvisos(d.avisos));
   }
 
   useEffect(recargar, []);
@@ -221,15 +224,29 @@ export default function AdminPanel({ textos }: { textos: Record<string, string> 
       </section>
 
       <section className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-2">
-        <h2 className="font-semibold">Textos de WhatsApp</h2>
-        {Object.entries(textos).map(([clave, texto]) => (
-          <div key={clave} className="flex items-start justify-between gap-2 text-sm">
-            <p className="text-white/70">{texto}</p>
-            <button onClick={() => copiar(texto)} className="shrink-0 rounded bg-white/10 px-2 py-1 text-xs">
-              Copiar
-            </button>
-          </div>
-        ))}
+        <h2 className="font-semibold">Avisos automáticos por WhatsApp</h2>
+        <p className="text-xs text-white/50">
+          Se mandan solos a cada persona, a las 9:15 del día que toca, con un botón que la lleva directa a su página.
+          Solo le llegan a quien le corresponde (el recordatorio, a quien aún no ha escrito su pista; la pista nueva,
+          a quien tiene una esperando).
+        </p>
+        <ul className="divide-y divide-white/5 text-sm">
+          {avisos?.map((a) => (
+            <li key={a.id} className="py-2">
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-white/80">{a.titulo}</span>
+                <span className="shrink-0 text-xs text-white/50">
+                  {new Date(a.fecha).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" })}
+                </span>
+              </div>
+              <p className="text-xs text-white/50">
+                {a.estado === "pendiente"
+                  ? `Pendiente · hoy le llegaría a ${a.destinatarios} ${a.destinatarios === 1 ? "persona" : "personas"}`
+                  : `Enviado a ${a.enviados} de ${a.destinatarios}`}
+              </p>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-2">
