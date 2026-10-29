@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { sesionActual, esAdmin } from "@/lib/auth";
-import { resenasAbiertas, resultadosAbiertos } from "@/lib/calendario";
+import { calendario, resenasAbiertas, resultadosAbiertos } from "@/lib/calendario";
 import NavBar from "@/components/NavBar";
-import BarraProximoPaso from "@/components/BarraProximoPaso";
+import GuiaRecorrido from "@/components/GuiaRecorrido";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -23,6 +23,12 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const sesion = await sesionActual();
+  const cal = calendario();
+  const fechasGuia = {
+    limites: cal.limiteFicha.map((d) => d.toISOString()),
+    fichas: cal.fichas.map((d) => d.toISOString()),
+    entrega: cal.entrega.toISOString(),
+  };
 
   return (
     <html lang="es" className={`${inter.variable} ${geistMono.variable} h-full antialiased`}>
@@ -34,7 +40,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
               mostrarRegalos={resenasAbiertas()}
               mostrarResultados={resultadosAbiertos()}
             />
-            <BarraProximoPaso />
+            <GuiaRecorrido fechas={fechasGuia} />
           </>
         )}
         {children}
