@@ -34,8 +34,12 @@ export default async function MisFichas() {
   return (
     <main className="flex-1 p-6 max-w-3xl mx-auto w-full space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Pistas</h1>
-        <p className="text-white/60">Habla de ti, no de tu joya. Y no pongas tu nombre, que nos conocemos.</p>
+        <h1 className="text-2xl font-bold">Escribe pistas sobre ti</h1>
+        <p className="text-white/60">
+          Cada lunes, la persona a la que le regalas recibe una de estas pistas para intentar adivinar quién es su
+          amigo invisible. Escríbela antes del domingo anterior. Habla de ti, no del regalo, y no pongas tu nombre,
+          que nos conocemos.
+        </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         {estado.map((f) => (

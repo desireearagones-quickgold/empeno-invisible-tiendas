@@ -14,12 +14,26 @@ function fecha(envVar: string): Date {
   return d;
 }
 
+const ZONA = "Europe/Madrid";
+
+/** Desfase de Madrid respecto a UTC en esa fecha, ej. "+01:00". */
+function desfaseMadrid(d: Date): string {
+  const nombre = new Intl.DateTimeFormat("en-US", { timeZone: ZONA, timeZoneName: "longOffset" })
+    .formatToParts(d)
+    .find((p) => p.type === "timeZoneName")!.value; // "GMT+01:00"
+  return nombre === "GMT" ? "+00:00" : nombre.slice(3);
+}
+
+// En hora de Madrid a propósito: Vercel corre en UTC, y con getDay/setHours
+// del servidor el límite quedaba en lunes a las 00:59 en vez de domingo 23:59.
 function domingoAnterior(d: Date): Date {
-  const copia = new Date(d);
-  const diasDesdeDomingo = copia.getDay(); // 0 = domingo
-  copia.setDate(copia.getDate() - diasDesdeDomingo - (diasDesdeDomingo === 0 ? 7 : 0));
-  copia.setHours(23, 59, 0, 0);
-  return copia;
+  const [y, m, dia] = new Intl.DateTimeFormat("en-CA", { timeZone: ZONA, year: "numeric", month: "2-digit", day: "2-digit" })
+    .format(d)
+    .split("-")
+    .map(Number);
+  const diaSemana = new Date(Date.UTC(y, m - 1, dia)).getUTCDay(); // 0 = domingo
+  const domingo = new Date(Date.UTC(y, m - 1, dia - (diaSemana === 0 ? 7 : diaSemana)));
+  return new Date(`${domingo.toISOString().slice(0, 10)}T23:59:00${desfaseMadrid(domingo)}`);
 }
 
 export function calendario() {

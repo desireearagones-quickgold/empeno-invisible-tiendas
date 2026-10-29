@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import LogoQuickgold from "@/components/LogoQuickgold";
 
@@ -22,6 +23,7 @@ export default function ContratoAnimado({
   const [mostrarAnimacion, setMostrarAnimacion] = useState(!yaVisto);
   const [paso, setPaso] = useState<"cerrado" | "abriendo" | "modal">("cerrado");
   const reducida = useReducedMotion();
+  const router = useRouter();
   const [fechaImpresion] = useState(() => new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" }));
 
   useEffect(() => {
@@ -208,12 +210,25 @@ export default function ContratoAnimado({
                 className="documento max-h-[85vh] w-full max-w-md overflow-y-auto rounded-sm border border-black/10 bg-(--color-crema) p-6 text-(--color-negro) shadow-2xl text-sm"
               >
                 {contenido}
-                <div className="mt-4">
+                <div className="mt-4 rounded border border-(--color-dorado-oscuro)/30 bg-(--color-dorado-oscuro)/5 p-3 text-xs leading-relaxed">
+                  <p className="font-bold">¿Y ahora qué?</p>
+                  <p className="mt-1 text-black/70">
+                    Escribe tu primera pista sobre ti. {nombreReceptor} la leerá para intentar adivinar quién le
+                    regala, sin saber que eres tú. Cada semana escribes una nueva.
+                  </p>
+                </div>
+                <div className="mt-3 space-y-2">
                   <button
-                    onClick={continuar}
+                    onClick={() => {
+                      continuar();
+                      router.push("/mis-fichas");
+                    }}
                     className="w-full rounded-md bg-(--color-dorado-oscuro) py-2 text-sm font-semibold text-(--color-crema)"
                   >
-                    Seguir
+                    Escribir mi primera pista
+                  </button>
+                  <button onClick={continuar} className="w-full py-1 text-xs text-black/50 underline">
+                    Ahora no, quedarme en el contrato
                   </button>
                 </div>
               </motion.div>

@@ -4,6 +4,7 @@ import "./globals.css";
 import { sesionActual, esAdmin } from "@/lib/auth";
 import { resenasAbiertas, resultadosAbiertos } from "@/lib/calendario";
 import NavBar from "@/components/NavBar";
+import BarraProximoPaso from "@/components/BarraProximoPaso";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -27,11 +28,14 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="es" className={`${inter.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-(--color-fondo) text-(--color-texto)">
         {sesion && (
-          <NavBar
-            esAdmin={esAdmin(sesion.phone)}
-            mostrarRegalos={resenasAbiertas()}
-            mostrarResultados={resultadosAbiertos()}
-          />
+          <>
+            <NavBar
+              esAdmin={esAdmin(sesion.phone)}
+              mostrarRegalos={resenasAbiertas()}
+              mostrarResultados={resultadosAbiertos()}
+            />
+            <BarraProximoPaso />
+          </>
         )}
         {children}
       </body>
