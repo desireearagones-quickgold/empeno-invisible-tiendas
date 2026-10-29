@@ -17,7 +17,7 @@ export type Destino = (typeof DESTINOS)[number];
 export const PLANTILLAS = {
   pista: "nueva_pista",
   recordatorio: "recordatorio_pista",
-  regalos: "abrir_regalos",
+  regalos: "abrir_regalos_2",
 } as const;
 
 type Participante = typeof participants.$inferSelect;
