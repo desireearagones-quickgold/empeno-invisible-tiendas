@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { sesionActual } from "@/lib/auth";
 import { resenasAbiertas } from "@/lib/calendario";
 import { db } from "@/db/client";
-import { assignments } from "@/db/schema";
+import { assignments, gifts } from "@/db/schema";
 import { hashId } from "@/lib/crypto";
 import Link from "next/link";
 import SubirRegalo from "./SubirRegalo";
@@ -25,6 +25,10 @@ export default async function Resenas() {
     .select()
     .from(assignments)
     .where(eq(assignments.receiverHash, hashId(sesion.id)));
+  const [miRegalo] = await db
+    .select({ title: gifts.title, photoUrl: gifts.photoUrl })
+    .from(gifts)
+    .where(eq(gifts.receiverId, sesion.id));
 
   return (
     <main className="flex-1 p-6 max-w-3xl mx-auto w-full space-y-8">
@@ -49,7 +53,7 @@ export default async function Resenas() {
         </div>
       )}
 
-      <SubirRegalo />
+      <SubirRegalo miRegalo={miRegalo ?? null} />
       <Galeria />
     </main>
   );

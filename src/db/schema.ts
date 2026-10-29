@@ -61,6 +61,16 @@ export const gifts = pgTable("gifts", {
   createdAt: text("created_at").notNull(),
 });
 
+// La foto de cada regalo, aparte de `gifts` para que listar los regalos no
+// arrastre las imágenes. Va en la base de datos porque en Vercel no se puede
+// escribir en disco; el móvil la reduce antes de mandarla (~200 KB).
+export const giftPhotos = pgTable("gift_photos", {
+  giftId: text("gift_id").primaryKey(),
+  mime: text("mime").notNull(),
+  dataBase64: text("data_base64").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
 export const reviews = pgTable(
   "reviews",
   {
