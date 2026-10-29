@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { empezarGuia } from "@/components/GuiaRecorrido";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import LogoQuickgold from "@/components/LogoQuickgold";
@@ -25,13 +25,10 @@ export default function ContratoAnimado({
   const reducida = useReducedMotion();
   const [fechaImpresion] = useState(() => new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" }));
 
-  useEffect(() => {
-    if (!yaVisto) {
-      fetch("/api/contrato/visto", { method: "POST" }).catch(() => {});
-    }
-  }, [yaVisto]);
-
   function abrir() {
+    // Cuenta como visto al abrir el sobre, no al entrar en la página: si no,
+    // quien entra y sale sin abrirlo lo encuentra ya abierto la siguiente vez.
+    if (!yaVisto) fetch("/api/contrato/visto", { method: "POST" }).catch(() => {});
     if (reducida) {
       setMostrarAnimacion(false);
       return;
