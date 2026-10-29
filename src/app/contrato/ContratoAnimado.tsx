@@ -22,6 +22,9 @@ export default function ContratoAnimado({
 }) {
   const [mostrarAnimacion, setMostrarAnimacion] = useState(!yaVisto);
   const [paso, setPaso] = useState<"cerrado" | "abriendo" | "modal">("cerrado");
+  // La guía solo arranca la primera vez que se abre el sobre; al volver a
+  // abrirlo con "Volver a ver" el contrato se cierra sin más.
+  const [primeraVez, setPrimeraVez] = useState(!yaVisto);
   const reducida = useReducedMotion();
   const [fechaImpresion] = useState(() => new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" }));
 
@@ -31,6 +34,10 @@ export default function ContratoAnimado({
     if (!yaVisto) fetch("/api/contrato/visto", { method: "POST" }).catch(() => {});
     if (reducida) {
       setMostrarAnimacion(false);
+      if (primeraVez) {
+        setPrimeraVez(false);
+        empezarGuia();
+      }
       return;
     }
     setPaso("abriendo");
@@ -43,6 +50,7 @@ export default function ContratoAnimado({
   }
 
   function volverAVer() {
+    setPrimeraVez(false);
     setPaso("cerrado");
     setMostrarAnimacion(true);
   }
@@ -210,11 +218,14 @@ export default function ContratoAnimado({
                   <button
                     onClick={() => {
                       continuar();
-                      empezarGuia();
+                      if (primeraVez) {
+                        setPrimeraVez(false);
+                        empezarGuia();
+                      }
                     }}
                     className="w-full rounded-md bg-(--color-dorado-oscuro) py-2 text-sm font-semibold text-(--color-crema)"
                   >
-                    Siguiente: cómo sigue el juego
+                    {primeraVez ? "Siguiente: cómo sigue el juego" : "Cerrar"}
                   </button>
                 </div>
               </motion.div>
