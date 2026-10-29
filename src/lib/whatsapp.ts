@@ -7,6 +7,8 @@ type Plantilla = {
   variables?: Record<string, string>;
   /** Si la plantilla tiene un botón de URL dinámica: solo la parte que falta detrás de la URL base. */
   botonSufijo?: string;
+  /** Si la plantilla tiene imagen de cabecera: Meta exige mandarla en cada envío (URL pública). */
+  imagenCabecera?: string;
 };
 
 /**
@@ -31,6 +33,9 @@ export async function enviarWhatsApp(to: string, body: Plantilla | { text: strin
             name: body.template,
             language: { code: body.lang ?? "en_US" },
             components: [
+              ...(body.imagenCabecera
+                ? [{ type: "header", parameters: [{ type: "image", image: { link: body.imagenCabecera } }] }]
+                : []),
               ...(body.variables && Object.keys(body.variables).length > 0
                 ? [
                     {
@@ -100,5 +105,6 @@ export async function enviarAvisoSorteoConBoton(telefono: string, token: string)
     // castellano; con "es" Meta responde que no existe (#132001).
     lang: "en",
     botonSufijo: token,
+    imagenCabecera: `${process.env.APP_URL}/whatsapp-cabecera.png`,
   });
 }
