@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { gifts, reviews, participants } from "@/db/schema";
+import { hashId } from "@/lib/crypto";
 
 export type PuestoRanking = {
   giftId: string;
@@ -61,9 +62,16 @@ export type ReseñaPublica = {
   quilates: number;
   comment: string | null;
   createdAt: string;
+  autor: string | null;
 };
 
-/** Las reseñas de un regalo, sin tocar quién las escribió (sigue anónimo). */
+/**
+ * Las reseñas de un regalo con el nombre de quien las escribió. Solo para la
+ * página de Resultados: mientras el plazo está abierto son anónimas, y al
+ * salir los resultados se destapan (decisión de las organizadoras). En la
+ * base solo hay el hash de quien reseñó, así que se busca a quién
+ * corresponde comparando con el hash de cada participante.
+ */
 export async function reseñasDeRegalo(giftId: string): Promise<ReseñaPublica[]> {
   const filas = await db
     .select({
@@ -72,8 +80,25 @@ export async function reseñasDeRegalo(giftId: string): Promise<ReseñaPublica[]
       comment: reviews.comment,
       createdAt: reviews.createdAt,
       hidden: reviews.hidden,
+      reviewerHash: reviews.reviewerHash,
     })
     .from(reviews)
     .where(eq(reviews.giftId, giftId));
-  return filas.filter((r) => !r.hidden).map(({ id, quilates, comment, createdAt }) => ({ id, quilates, comment, createdAt }));
+
+  const nombrePorHash = new Map(
+    (await db.select({ id: participants.id, name: participants.name }).from(participants)).map((p) => [
+      hashId(p.id),
+      p.name,
+    ])
+  );
+
+  return filas
+    .filter((r) => !r.hidden)
+    .map(({ id, quilates, comment, createdAt, reviewerHash }) => ({
+      id,
+      quilates,
+      comment,
+      createdAt,
+      autor: nombrePorHash.get(reviewerHash) ?? null,
+    }));
 }

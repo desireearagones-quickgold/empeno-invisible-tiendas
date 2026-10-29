@@ -30,7 +30,10 @@ export default async function Resenas() {
     <main className="flex-1 p-6 max-w-3xl mx-auto w-full space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Regalos y reseñas</h1>
-        <p className="text-white/60">Las reseñas son anónimas y nadie las verá hasta que se cierren.</p>
+        <p className="text-white/60">
+          Nadie verá las reseñas hasta que salgan los resultados. Entonces aparecerán con el nombre de quien las
+          escribió.
+        </p>
       </div>
 
       {miAsignacion && (
