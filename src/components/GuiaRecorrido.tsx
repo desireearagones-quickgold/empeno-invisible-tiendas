@@ -46,7 +46,7 @@ function pasos(f: FechasGuia) {
     {
       ruta: "/mis-fichas",
       titulo: "Escribe pistas sobre ti",
-      texto: `Cada semana escribes una pista sobre ti, antes del domingo ${dias(f.limites)}. La persona a la que regalas las irá recibiendo para intentar adivinar quién es. Habla de ti, no del regalo.`,
+      texto: `Escribe tres pistas sobre ti. Lo mejor es dejarlas todas escritas ya: la persona a la que regalas recibirá una cada lunes para intentar adivinar quién es. Puedes corregir cada una hasta el domingo antes de que se entregue (${dias(f.limites)}). Habla de ti, no del regalo.`,
     },
     {
       ruta: "/caja",

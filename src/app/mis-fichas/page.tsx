@@ -36,9 +36,9 @@ export default async function MisFichas() {
       <div>
         <h1 className="text-2xl font-bold">Escribe pistas sobre ti</h1>
         <p className="text-white/60">
-          Cada lunes, la persona a la que le regalas recibe una de estas pistas para intentar adivinar quién es su
-          amigo invisible. Escríbela antes del domingo anterior. Habla de ti, no del regalo, y no pongas tu nombre,
-          que nos conocemos.
+          Déjalas las tres escritas ya: la persona a la que le regalas recibirá una cada lunes para intentar
+          adivinar quién es su amigo invisible. Puedes corregir cada una hasta el domingo antes de que se entregue.
+          Habla de ti, no del regalo, y no pongas tu nombre, que nos conocemos.
         </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
