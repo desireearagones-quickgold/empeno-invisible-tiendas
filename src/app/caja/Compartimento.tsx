@@ -48,7 +48,7 @@ export default function Compartimento({
     return (
       <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center space-y-2">
         <div className="text-3xl">🔒</div>
-        <p className="font-semibold">Compartimento {numero}</p>
+        <p className="font-semibold">Pista {numero}</p>
         <p className="text-xs text-white/50">
           Se abre el {new Date(fechaDesbloqueo).toLocaleDateString("es-ES", { day: "numeric", month: "long" })}
         </p>
@@ -60,7 +60,7 @@ export default function Compartimento({
     if (!resultado.hayFicha) {
       return (
         <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center space-y-2">
-          <p className="font-semibold">Compartimento {numero}</p>
+          <p className="font-semibold">Pista {numero}</p>
           <p className="text-sm text-white/60">{resultado.mensaje}</p>
         </div>
       );
@@ -90,8 +90,8 @@ export default function Compartimento({
   return (
     <div className="rounded-lg border border-(--color-dorado)/40 bg-(--color-dorado)/10 p-4 text-center space-y-2">
       <div className="text-3xl">✨</div>
-      <p className="font-semibold">Compartimento {numero}</p>
-      <p className="text-xs text-(--color-dorado)">Nueva tasación</p>
+      <p className="font-semibold">Pista {numero}</p>
+      <p className="text-xs text-(--color-dorado)">Nueva pista</p>
       <button
         onClick={abrir}
         disabled={abriendo}

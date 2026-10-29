@@ -50,8 +50,11 @@ export default async function Caja() {
   return (
     <main className="flex-1 p-6 max-w-3xl mx-auto w-full space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Mi caja de seguridad</h1>
-        <p className="text-white/60">Tres compartimentos. Cada tasación llega cuando le toca.</p>
+        <h1 className="text-2xl font-bold">Pistas de tu amigo invisible</h1>
+        <p className="text-white/60">
+          Quien te ha tocado a ti va dejando pistas sobre sí mismo (no sobre el regalo), una cada semana, para que
+          vayas adivinando quién es.
+        </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         {compartimentos.map((c) => (

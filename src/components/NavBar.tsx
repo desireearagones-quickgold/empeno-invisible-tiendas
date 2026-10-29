@@ -23,8 +23,8 @@ export default function NavBar({
 
   const enlaces = [
     { href: "/contrato", label: "Contrato" },
-    { href: "/mis-fichas", label: "Pistas" },
-    { href: "/caja", label: "Mi caja" },
+    { href: "/mis-fichas", label: "Escribe pistas" },
+    { href: "/caja", label: "Tus pistas" },
     // No tiene sentido enseñar estos enlaces antes de que haya nada que ver
     // ahí: solo confunde (la gente los pulsa y se encuentra un "cerrado").
     ...(mostrarRegalos || esAdmin ? [{ href: "/resenas", label: "Regalos" }] : []),
@@ -33,7 +33,7 @@ export default function NavBar({
   ];
 
   return (
-    <nav className="print:hidden flex items-center gap-1 overflow-x-auto border-b border-white/10 bg-(--color-negro) px-3 py-2 text-sm">
+    <nav className="print:hidden relative z-20 flex items-center gap-1 overflow-x-auto border-b border-white/10 bg-(--color-negro) px-3 py-2 text-sm">
       {enlaces.map((e) => (
         <Link
           key={e.href}
