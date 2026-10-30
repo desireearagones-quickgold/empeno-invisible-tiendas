@@ -16,10 +16,10 @@ export const CAMPOS_FICHA: Record<
       placeholder: "18k de paciencia, 6k de puntualidad",
     },
     {
-      clave: "marcasUso",
-      etiqueta: "Marcas de uso",
-      ayuda: "Alguna manía o costumbre tuya",
-      placeholder: "se le da fatal perder en los juegos de mesa",
+      clave: "sello",
+      etiqueta: "Sello de la casa",
+      ayuda: "Algo que haces siempre, muy tuyo",
+      placeholder: "saluda a todo el mundo al llegar",
     },
     {
       clave: "valorReventa",
@@ -36,10 +36,10 @@ export const CAMPOS_FICHA: Record<
       placeholder: "le brillan los ojos cuando hay un viaje a la vista",
     },
     {
-      clave: "estado",
-      etiqueta: "Estado",
-      ayuda: "Cómo te describirías hoy",
-      placeholder: "usada, pero funcional",
+      clave: "garantia",
+      etiqueta: "Garantía",
+      ayuda: "Algo para lo que siempre se puede contar contigo",
+      placeholder: "nunca falla con una buena recomendación de series",
     },
     {
       clave: "origen",
