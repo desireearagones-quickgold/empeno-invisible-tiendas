@@ -30,10 +30,10 @@ export const CAMPOS_FICHA: Record<
   ],
   2: [
     {
-      clave: "peso",
-      etiqueta: "Peso",
-      ayuda: "Algo sobre cómo estás últimamente",
-      placeholder: "el justo, y subiendo con los polvorones",
+      clave: "brillo",
+      etiqueta: "Brillo",
+      ayuda: "Algo que te hace ilusión últimamente",
+      placeholder: "le brillan los ojos cuando hay un viaje a la vista",
     },
     {
       clave: "estado",
