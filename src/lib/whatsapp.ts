@@ -23,6 +23,12 @@ export async function enviarWhatsApp(to: string, body: Plantilla | { text: strin
     throw new Error("Falta WHATSAPP_PHONE_NUMBER_ID o WHATSAPP_ACCESS_TOKEN.");
   }
 
+  // Candado para probar en local: si está puesto, solo se manda a ese número.
+  const soloA = process.env.WHATSAPP_SOLO_A;
+  if (soloA && to !== soloA) {
+    throw new Error(`Modo prueba: solo se manda WhatsApp a ${soloA}.`);
+  }
+
   const payload =
     "template" in body
       ? {
