@@ -41,7 +41,7 @@ export default function TicketRecogida({
 
         <div className="mt-auto pt-4">
           <p className="text-xs leading-relaxed text-black/70">
-            <strong>Condiciones:</strong> imprescindible presentar este contrato impreso para recoger el paquete.
+            <strong>Condiciones:</strong> imprescindible presentar este contrato, impreso o en la pantalla del móvil, para recoger el paquete.
             Sin contrato no hay joya.
           </p>
 
