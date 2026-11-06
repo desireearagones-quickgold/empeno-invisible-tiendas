@@ -26,8 +26,11 @@ export default function AdminPanel() {
   const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("");
   const [mensaje, setMensaje] = useState<string | null>(null);
+  const [conWhatsapp, setConWhatsapp] = useState<Set<string>>(new Set());
+  const [mandandoTodos, setMandandoTodos] = useState(false);
 
   function recargar() {
+    fetch("/api/admin/whatsapp-sorteo").then((r) => r.json()).then((d) => setConWhatsapp(new Set(d.enviados)));
     fetch("/api/admin/estado").then((r) => r.json()).then(setEstado);
     fetch("/api/admin/participants").then((r) => r.json()).then((d) => setParticipantes(d.participants));
     fetch("/api/admin/reviews").then((r) => r.json()).then((d) => setReseñas(d.reviews));
@@ -54,6 +57,29 @@ export default function AdminPanel() {
     const res = await fetch(`/api/admin/participants/${id}/whatsapp`, { method: "POST" });
     const data = await res.json();
     setMensaje(res.ok ? "WhatsApp enviado." : data.error);
+    recargar();
+  }
+
+  async function mandarWhatsappATodos() {
+    const pendientes = (participantes ?? []).filter((p) => p.phone && !conWhatsapp.has(p.id)).length;
+    if (!window.confirm(`¿Mandar el WhatsApp del sorteo a ${pendientes} personas?`)) return;
+    setMandandoTodos(true);
+    setMensaje("Mandando… no cierres esta página.");
+    const res = await fetch("/api/admin/whatsapp-sorteo", { method: "POST" });
+    const data = await res.json();
+    setMandandoTodos(false);
+    if (!res.ok) {
+      setMensaje(data.error);
+    } else {
+      const partes = [`Enviados: ${data.enviados}.`];
+      if (data.yaLoTenian) partes.push(`Ya lo tenían: ${data.yaLoTenian}.`);
+      if (data.sinTelefono.length) partes.push(`Sin teléfono: ${data.sinTelefono.join(", ")}.`);
+      if (data.errores.length) {
+        partes.push(`Fallaron ${data.errores.length}: ${data.errores.map((e: { nombre: string }) => e.nombre).join(", ")}. Vuelve a pulsar para reintentar solo esos.`);
+      }
+      setMensaje(partes.join(" "));
+    }
+    recargar();
   }
 
   async function importarCsv(file: File) {
@@ -151,6 +177,21 @@ export default function AdminPanel() {
         >
           {estado?.sorteoHecho ? "Sorteo ya ejecutado" : "Ejecutar sorteo"}
         </button>
+        {estado?.sorteoHecho && (
+          <div className="space-y-1">
+            <button
+              onClick={mandarWhatsappATodos}
+              disabled={mandandoTodos}
+              className="rounded bg-(--color-dorado) px-4 py-2 text-sm font-semibold text-black disabled:opacity-40"
+            >
+              {mandandoTodos ? "Mandando…" : "Mandar WhatsApp a todos"}
+            </button>
+            <p className="text-xs text-white/50">
+              Lo tienen {conWhatsapp.size} de {participantes?.length ?? 0}. Se salta a quien ya lo tiene, así que se
+              puede volver a pulsar sin repetir mensajes.
+            </p>
+          </div>
+        )}
       </section>
 
       <section className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
@@ -196,6 +237,7 @@ export default function AdminPanel() {
             <li key={p.id} className="flex items-center justify-between gap-2 py-1.5">
               <span className="truncate">
                 {p.name} <span className="text-white/40">({p.phone ?? "sin teléfono"})</span>
+                {conWhatsapp.has(p.id) && <span className="ml-1 text-xs text-green-400">✓ enviado</span>}
               </span>
               <span className="flex shrink-0 gap-2">
                 <button

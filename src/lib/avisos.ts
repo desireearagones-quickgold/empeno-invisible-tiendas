@@ -3,7 +3,7 @@ import { db } from "@/db/client";
 import { assignments, config, fichas, participants } from "@/db/schema";
 import { calendario } from "@/lib/calendario";
 import { hashId } from "@/lib/crypto";
-import { enviarWhatsApp } from "@/lib/whatsapp";
+import { enviarAvisoSorteoConBoton, enviarWhatsApp } from "@/lib/whatsapp";
 
 // Avisos por WhatsApp que se mandan solos (no hay grupo de la oficina donde
 // pegarlos a mano). Cada uno es una plantilla de Meta con un botón cuya URL
@@ -159,4 +159,17 @@ export async function procesarAvisos({ enviar, ahora = new Date() }: { enviar: b
     resultados.push(resultado);
   }
   return resultados;
+}
+
+// El WhatsApp del sorteo no es automático: se manda desde el panel, a una
+// persona o a todas. Queda apuntado igual que los avisos, para que "Mandar a
+// todos" se salte a quien ya lo tiene y se pueda pulsar otra vez sin repetir.
+export const claveSorteo = (participanteId: string) => clave("sorteo", participanteId);
+
+export async function mandarWhatsappSorteo(p: { id: string; phone: string; accessToken: string }) {
+  await enviarAvisoSorteoConBoton(p.phone, p.accessToken);
+  await db
+    .insert(config)
+    .values({ key: claveSorteo(p.id), value: new Date().toISOString() })
+    .onConflictDoNothing();
 }

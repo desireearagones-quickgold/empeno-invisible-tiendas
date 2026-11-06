@@ -40,7 +40,7 @@ for (const p of listado) {
   }
 }
 for (const a of actuales) {
-  if (!enListado.has(a.phone)) {
+  if (!enListado.has(a.phone ?? "")) {
     console.log("BAJA  ", a.name, a.phone);
     if (aplicar) await db.delete(participants).where(eq(participants.id, a.id));
   }

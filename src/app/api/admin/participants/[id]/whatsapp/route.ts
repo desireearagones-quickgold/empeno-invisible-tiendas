@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { participants } from "@/db/schema";
 import { requerirAdmin } from "@/lib/contexto";
-import { enviarAvisoSorteoConBoton } from "@/lib/whatsapp";
+import { mandarWhatsappSorteo } from "@/lib/avisos";
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const ctx = await requerirAdmin();
@@ -19,7 +19,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   try {
     // El botón de la plantilla ya lleva la URL base puesta en Meta; solo
     // hace falta mandar el trocito que falta detrás (el token).
-    await enviarAvisoSorteoConBoton(participante.phone, participante.accessToken);
+    await mandarWhatsappSorteo({ ...participante, phone: participante.phone });
     return NextResponse.json({ ok: true });
   } catch (err) {
     return NextResponse.json({ error: err instanceof Error ? err.message : "Error desconocido." }, { status: 502 });
