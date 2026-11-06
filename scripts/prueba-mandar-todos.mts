@@ -1,3 +1,4 @@
+// @ts-nocheck -- usa el Playwright de otra carpeta, que no existe en Vercel; sin esto no compila allí.
 // Prueba del botón "Mandar WhatsApp a todos" contra el servidor local, que
 // tiene puesto WHATSAPP_SOLO_A: solo puede salir el mensaje de Desirée.
 // Marca el sorteo como hecho un momento y al final lo deja todo como estaba.
