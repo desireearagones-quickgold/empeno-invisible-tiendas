@@ -28,6 +28,22 @@ export default function AdminPanel() {
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [conWhatsapp, setConWhatsapp] = useState<Set<string>>(new Set());
   const [mandandoTodos, setMandandoTodos] = useState(false);
+  // Confirmación dentro de la página: window.confirm no sale en el navegador
+  // de WhatsApp/Teams ni si Chrome tiene bloqueados los diálogos, y entonces
+  // el botón no hacía nada sin decir por qué.
+  const [confirmando, setConfirmando] = useState<"sorteo" | "todos" | null>(null);
+  const [ejecutando, setEjecutando] = useState(false);
+
+  /** fetch que nunca falla en silencio: si algo va mal, lo dice en el mensaje. */
+  async function pedir(url: string, init?: RequestInit) {
+    try {
+      const res = await fetch(url, init);
+      const data = await res.json().catch(() => ({ error: `El servidor respondió ${res.status} sin explicación.` }));
+      return { ok: res.ok, data };
+    } catch (err) {
+      return { ok: false, data: { error: `No se pudo conectar: ${err instanceof Error ? err.message : err}` } };
+    }
+  }
 
   function recargar() {
     fetch("/api/admin/whatsapp-sorteo").then((r) => r.json()).then((d) => setConWhatsapp(new Set(d.enviados)));
@@ -61,14 +77,12 @@ export default function AdminPanel() {
   }
 
   async function mandarWhatsappATodos() {
-    const pendientes = (participantes ?? []).filter((p) => p.phone && !conWhatsapp.has(p.id)).length;
-    if (!window.confirm(`¿Mandar el WhatsApp del sorteo a ${pendientes} personas?`)) return;
+    setConfirmando(null);
     setMandandoTodos(true);
     setMensaje("Mandando… no cierres esta página.");
-    const res = await fetch("/api/admin/whatsapp-sorteo", { method: "POST" });
-    const data = await res.json();
+    const { ok, data } = await pedir("/api/admin/whatsapp-sorteo", { method: "POST" });
     setMandandoTodos(false);
-    if (!res.ok) {
+    if (!ok) {
       setMensaje(data.error);
     } else {
       const partes = [`Enviados: ${data.enviados}.`];
@@ -99,15 +113,16 @@ export default function AdminPanel() {
   }
 
   async function ejecutarSorteo() {
-    if (!window.confirm("¿Seguro? El sorteo solo se puede ejecutar una vez.")) return;
-    if (!window.confirm("De verdad, de verdad: ¿ejecutar el sorteo ahora?")) return;
-    const res = await fetch("/api/sorteo/ejecutar", {
+    setConfirmando(null);
+    setEjecutando(true);
+    setMensaje("Haciendo el sorteo…");
+    const { ok, data } = await pedir("/api/sorteo/ejecutar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ confirmar: true }),
     });
-    const data = await res.json();
-    setMensaje(res.ok ? `Sorteo hecho: ${data.parejas} parejas.` : data.error);
+    setEjecutando(false);
+    setMensaje(ok ? `Sorteo hecho: ${data.parejas} parejas.` : data.error);
     recargar();
   }
 
@@ -170,28 +185,60 @@ export default function AdminPanel() {
 
       <section className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
         <h2 className="font-semibold">Sorteo</h2>
-        <button
-          onClick={ejecutarSorteo}
-          disabled={estado?.sorteoHecho}
-          className="rounded bg-(--color-dorado) px-4 py-2 text-sm font-semibold text-black disabled:opacity-40"
-        >
-          {estado?.sorteoHecho ? "Sorteo ya ejecutado" : "Ejecutar sorteo"}
-        </button>
+        {confirmando === "sorteo" ? (
+          <div className="space-y-2 rounded border border-(--color-dorado) p-3">
+            <p className="text-sm">¿Seguro? El sorteo solo se puede hacer una vez ({estado?.totalParticipantes ?? "…"} personas).</p>
+            <div className="flex gap-2">
+              <button onClick={ejecutarSorteo} className="rounded bg-(--color-dorado) px-4 py-2 text-sm font-semibold text-black">
+                Sí, hacer el sorteo
+              </button>
+              <button onClick={() => setConfirmando(null)} className="rounded border border-white/20 px-4 py-2 text-sm">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setConfirmando("sorteo")}
+            disabled={estado?.sorteoHecho || ejecutando}
+            className="rounded bg-(--color-dorado) px-4 py-2 text-sm font-semibold text-black disabled:opacity-40"
+          >
+            {estado?.sorteoHecho ? "Sorteo ya ejecutado" : ejecutando ? "Haciendo el sorteo…" : "Ejecutar sorteo"}
+          </button>
+        )}
         {estado?.sorteoHecho && (
           <div className="space-y-1">
-            <button
-              onClick={mandarWhatsappATodos}
-              disabled={mandandoTodos}
-              className="rounded bg-(--color-dorado) px-4 py-2 text-sm font-semibold text-black disabled:opacity-40"
-            >
-              {mandandoTodos ? "Mandando…" : "Mandar WhatsApp a todos"}
-            </button>
+            {confirmando === "todos" ? (
+              <div className="space-y-2 rounded border border-(--color-dorado) p-3">
+                <p className="text-sm">
+                  ¿Mandar el WhatsApp del sorteo a{" "}
+                  {(participantes ?? []).filter((p) => p.phone && !conWhatsapp.has(p.id)).length} personas?
+                </p>
+                <div className="flex gap-2">
+                  <button onClick={mandarWhatsappATodos} className="rounded bg-(--color-dorado) px-4 py-2 text-sm font-semibold text-black">
+                    Sí, mandar
+                  </button>
+                  <button onClick={() => setConfirmando(null)} className="rounded border border-white/20 px-4 py-2 text-sm">
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmando("todos")}
+                disabled={mandandoTodos}
+                className="rounded bg-(--color-dorado) px-4 py-2 text-sm font-semibold text-black disabled:opacity-40"
+              >
+                {mandandoTodos ? "Mandando…" : "Mandar WhatsApp a todos"}
+              </button>
+            )}
             <p className="text-xs text-white/50">
               Lo tienen {conWhatsapp.size} de {participantes?.length ?? 0}. Se salta a quien ya lo tiene, así que se
               puede volver a pulsar sin repetir mensajes.
             </p>
           </div>
         )}
+        {mensaje && <p className="text-sm text-(--color-dorado)">{mensaje}</p>}
       </section>
 
       <section className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
