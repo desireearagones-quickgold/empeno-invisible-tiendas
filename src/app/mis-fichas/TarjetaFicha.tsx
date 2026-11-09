@@ -90,8 +90,8 @@ export default function TarjetaFicha({
       {estado === "entregada" || estado === "plazo-perdido" ? (
         <p className="text-sm text-white/50">
           {estado === "entregada"
-            ? `Entregada el ${new Date(fechaLimite).toLocaleString("es-ES")}: ya no se puede editar.`
-            : `No llegaste a escribirla antes del plazo (${new Date(fechaLimite).toLocaleString("es-ES")}). Tu compañero/a se quedará sin esta pista.`}
+            ? `Entregada el ${new Date(fechaLimite).toLocaleString("es-ES", { timeZone: "Europe/Madrid" })}: ya no se puede editar.`
+            : `No llegaste a escribirla antes del plazo (${new Date(fechaLimite).toLocaleString("es-ES", { timeZone: "Europe/Madrid" })}). Tu compañero/a se quedará sin esta pista.`}
         </p>
       ) : (
         <>

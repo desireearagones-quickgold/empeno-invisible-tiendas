@@ -20,8 +20,8 @@ export default async function Contrato() {
       <main className="flex-1 flex flex-col items-center justify-center gap-6 p-6 text-center">
         <h1 className="text-2xl font-bold text-(--color-dorado)">Ventanilla cerrada</h1>
         <p className="max-w-sm text-white/70">
-          El sorteo se abre el {cal.sorteo.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })} a
-          las {cal.sorteo.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}.
+          El sorteo se abre el {cal.sorteo.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Madrid" })} a
+          las {cal.sorteo.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" })}.
         </p>
         <CuentaAtras hasta={cal.sorteo.toISOString()} />
       </main>
@@ -67,14 +67,14 @@ export default async function Contrato() {
           contractNumber={asignacion.contractNumber}
           nombreDepositante={sesion.name}
           nombreReceptor={receptor?.name ?? "—"}
-          fechaOperacion={cal.sorteo.toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
-          fechaDevolucion={cal.entrega.toLocaleDateString("es-ES", { day: "numeric", month: "long" })}
+          fechaOperacion={cal.sorteo.toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/Madrid" })}
+          fechaDevolucion={cal.entrega.toLocaleDateString("es-ES", { day: "numeric", month: "long", timeZone: "Europe/Madrid" })}
         />
         {miTicket && (
           <TicketRecogida
             contractNumber={miTicket.contractNumber}
             nombreTitular={sesion.name}
-            fechaRecogida={cal.entrega.toLocaleDateString("es-ES", { day: "numeric", month: "long" })}
+            fechaRecogida={cal.entrega.toLocaleDateString("es-ES", { day: "numeric", month: "long", timeZone: "Europe/Madrid" })}
           />
         )}
       </div>

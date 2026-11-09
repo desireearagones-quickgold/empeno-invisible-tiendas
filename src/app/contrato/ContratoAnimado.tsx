@@ -26,7 +26,7 @@ export default function ContratoAnimado({
   // abrirlo con "Volver a ver" el contrato se cierra sin más.
   const [primeraVez, setPrimeraVez] = useState(!yaVisto);
   const reducida = useReducedMotion();
-  const [fechaImpresion] = useState(() => new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" }));
+  const [fechaImpresion] = useState(() => new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Madrid" }));
 
   function abrir() {
     // Cuenta como visto al abrir el sobre, no al entrar en la página: si no,

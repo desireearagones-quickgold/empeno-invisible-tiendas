@@ -325,7 +325,7 @@ export default function AdminPanel() {
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-white/80">{a.titulo}</span>
                 <span className="shrink-0 text-xs text-white/50">
-                  {new Date(a.fecha).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" })}
+                  {new Date(a.fecha).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", timeZone: "Europe/Madrid" })}
                 </span>
               </div>
               <p className="text-xs text-white/50">

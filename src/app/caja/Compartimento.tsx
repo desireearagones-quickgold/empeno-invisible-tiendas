@@ -50,7 +50,7 @@ export default function Compartimento({
         <div className="text-3xl">🔒</div>
         <p className="font-semibold">Pista {numero}</p>
         <p className="text-xs text-white/50">
-          Se abre el {new Date(fechaDesbloqueo).toLocaleDateString("es-ES", { day: "numeric", month: "long" })}
+          Se abre el {new Date(fechaDesbloqueo).toLocaleDateString("es-ES", { day: "numeric", month: "long", timeZone: "Europe/Madrid" })}
         </p>
       </div>
     );
