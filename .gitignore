@@ -46,3 +46,4 @@ dev.log
 *.tsbuildinfo
 next-env.d.ts
 scripts/datos/
+scripts/tmp/

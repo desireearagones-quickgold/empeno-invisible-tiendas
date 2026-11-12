@@ -4,14 +4,13 @@ import { sesionActual } from "@/lib/auth";
 import { db } from "@/db/client";
 import { fichas } from "@/db/schema";
 import { hashId } from "@/lib/crypto";
-import { calendario, fichaCerrada } from "@/lib/calendario";
+import { pistaAbierta } from "@/lib/calendario";
 import TarjetaFicha from "./TarjetaFicha";
 
 export default async function MisFichas() {
   const sesion = await sesionActual();
   if (!sesion) redirect("/");
 
-  const cal = calendario();
   const authorHash = hashId(sesion.id);
 
   const numeros = [1, 2, 3] as const;
@@ -23,9 +22,8 @@ export default async function MisFichas() {
         .where(and(eq(fichas.authorHash, authorHash), eq(fichas.number, n)));
       return {
         numero: n,
-        cerrada: fichaCerrada(n),
-        fechaDesbloqueo: cal.fichas[n - 1].toISOString(),
-        fechaLimite: cal.limiteFicha[n - 1].toISOString(),
+        abreEn: existente?.abreEn ?? null,
+        entregada: existente ? pistaAbierta(existente.abreEn) : false,
         campos: (existente?.fields as Record<string, string>) ?? null,
       };
     })
@@ -36,9 +34,9 @@ export default async function MisFichas() {
       <div>
         <h1 className="text-2xl font-bold">Escribe pistas sobre ti</h1>
         <p className="text-white/60">
-          Déjalas las tres escritas ya: la persona a la que le regalas recibirá una cada lunes para intentar
-          adivinar quién es su amigo invisible. Puedes corregir cada una hasta el domingo antes de que se entregue.
-          Habla de ti, no del regalo, y no pongas tu nombre, que nos conocemos.
+          Cada pista le llega a la persona a la que regalas a las 9:00 del día siguiente de guardarla (así, aunque
+          esté a tu lado, no sabrá que la acabas de escribir tú). Escríbelas cuando quieras, de una en una o todas
+          a la vez, y hasta que le llegue puedes corregirla. Habla de ti, no del regalo, y no pongas tu nombre.
         </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
@@ -46,8 +44,8 @@ export default async function MisFichas() {
           <TarjetaFicha
             key={f.numero}
             numero={f.numero}
-            cerrada={f.cerrada}
-            fechaLimite={f.fechaLimite}
+            entregada={f.entregada}
+            abreEn={f.abreEn}
             camposGuardados={f.campos}
             nombrePropio={sesion.name}
           />

@@ -1,20 +1,11 @@
-// Todas las fechas del calendario viven en variables de entorno (ver .env.example),
-// nunca escritas a mano en el código. El domingo anterior a cada ficha es el
-// límite de edición; se calcula, no se guarda aparte, para no duplicar la lista.
-
-function fecha(envVar: string): Date {
-  const raw = process.env[envVar];
-  if (!raw) {
-    throw new Error(`Falta la variable de entorno ${envVar} con la fecha del calendario.`);
-  }
-  const d = new Date(raw);
-  if (Number.isNaN(d.getTime())) {
-    throw new Error(`La variable ${envVar} no es una fecha válida: "${raw}"`);
-  }
-  return d;
-}
+// En las tiendas no hay calendario: el sorteo se hace desde el panel cuando
+// se quiera, y cada pista le llega a quien la recibe al día siguiente de
+// escribirla, a las 9:00 de Madrid. No al momento a propósito: muchas
+// trabajan juntas, y si la pista apareciera al guardarla se sabría quién la
+// acaba de escribir.
 
 const ZONA = "Europe/Madrid";
+export const HORA_PISTA = 9;
 
 /** Desfase de Madrid respecto a UTC en esa fecha, ej. "+01:00". */
 function desfaseMadrid(d: Date): string {
@@ -24,53 +15,20 @@ function desfaseMadrid(d: Date): string {
   return nombre === "GMT" ? "+00:00" : nombre.slice(3);
 }
 
-// En hora de Madrid a propósito: Vercel corre en UTC, y con getDay/setHours
-// del servidor el límite quedaba en lunes a las 00:59 en vez de domingo 23:59.
-function domingoAnterior(d: Date): Date {
-  const [y, m, dia] = new Intl.DateTimeFormat("en-CA", { timeZone: ZONA, year: "numeric", month: "2-digit", day: "2-digit" })
-    .format(d)
+/**
+ * Cuándo se abre una pista escrita en `escrita`: el día siguiente (en hora
+ * de Madrid, no la del servidor, que en Vercel es UTC) a las 9:00.
+ */
+export function aperturaPista(escrita: Date): Date {
+  const [y, m, d] = new Intl.DateTimeFormat("en-CA", { timeZone: ZONA, year: "numeric", month: "2-digit", day: "2-digit" })
+    .format(escrita)
     .split("-")
     .map(Number);
-  const diaSemana = new Date(Date.UTC(y, m - 1, dia)).getUTCDay(); // 0 = domingo
-  const domingo = new Date(Date.UTC(y, m - 1, dia - (diaSemana === 0 ? 7 : diaSemana)));
-  return new Date(`${domingo.toISOString().slice(0, 10)}T23:59:00${desfaseMadrid(domingo)}`);
+  const manana = new Date(Date.UTC(y, m - 1, d + 1, 12)); // a mediodía, para coger el desfase de ese día
+  const hh = String(HORA_PISTA).padStart(2, "0");
+  return new Date(`${manana.toISOString().slice(0, 10)}T${hh}:00:00${desfaseMadrid(manana)}`);
 }
 
-export function calendario() {
-  const sorteo = fecha("DATE_SORTEO");
-  const fichas = [fecha("DATE_FICHA_1"), fecha("DATE_FICHA_2"), fecha("DATE_FICHA_3")] as const;
-  const entrega = fecha("DATE_ENTREGA");
-  const cierreResenas = fecha("DATE_CIERRE_RESENAS");
-
-  return {
-    sorteo,
-    fichas,
-    limiteFicha: fichas.map(domingoAnterior) as [Date, Date, Date],
-    entrega,
-    cierreResenas,
-  };
-}
-
-export function sorteoAbierto(ahora = new Date()): boolean {
-  return ahora >= calendario().sorteo;
-}
-
-/** Fecha en la que se desbloquea la ficha N (1-indexada) para su destinatario. */
-export function fichaDesbloqueada(numero: 1 | 2 | 3, ahora = new Date()): boolean {
-  return ahora >= calendario().fichas[numero - 1];
-}
-
-/** Si ya pasó el límite para escribir/editar la ficha N. */
-export function fichaCerrada(numero: 1 | 2 | 3, ahora = new Date()): boolean {
-  return ahora >= calendario().limiteFicha[numero - 1];
-}
-
-export function resenasAbiertas(ahora = new Date()): boolean {
-  const c = calendario();
-  return ahora >= c.entrega && ahora <= c.cierreResenas;
-}
-
-/** La página de resultados se abre en cuanto se cierran las reseñas. */
-export function resultadosAbiertos(ahora = new Date()): boolean {
-  return ahora > calendario().cierreResenas;
+export function pistaAbierta(abreEn: string | Date, ahora = new Date()): boolean {
+  return ahora >= new Date(abreEn);
 }

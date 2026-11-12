@@ -1,4 +1,4 @@
-import { pgTable, text, integer, boolean, jsonb, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, jsonb, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const participants = pgTable("participants", {
   id: text("id").primaryKey(),
@@ -35,6 +35,9 @@ export const fichas = pgTable(
     number: integer("number").notNull(), // 1..3
     fields: jsonb("fields").notNull().$type<Record<string, string>>(),
     updatedAt: text("updated_at").notNull(),
+    // Cuándo la ve quien la recibe: el día siguiente de escribirla (ver
+    // aperturaPista). Se fija al guardarla la primera vez y no cambia.
+    abreEn: text("abre_en").notNull(),
   },
   (t) => ({
     authorNumberIdx: uniqueIndex("fichas_author_number_idx").on(t.authorHash, t.number),
@@ -52,65 +55,6 @@ export const fichaOpens = pgTable(
     pk: uniqueIndex("ficha_opens_pk").on(t.receiverHash, t.number),
   })
 );
-
-export const gifts = pgTable("gifts", {
-  id: text("id").primaryKey(),
-  receiverId: text("receiver_id").notNull().unique(),
-  title: text("title").notNull(),
-  photoUrl: text("photo_url"),
-  createdAt: text("created_at").notNull(),
-});
-
-// La foto de cada regalo, aparte de `gifts` para que listar los regalos no
-// arrastre las imágenes. Va en la base de datos porque en Vercel no se puede
-// escribir en disco; el móvil la reduce antes de mandarla (~200 KB).
-export const giftPhotos = pgTable("gift_photos", {
-  giftId: text("gift_id").primaryKey(),
-  mime: text("mime").notNull(),
-  dataBase64: text("data_base64").notNull(),
-  updatedAt: text("updated_at").notNull(),
-});
-
-export const reviews = pgTable(
-  "reviews",
-  {
-    id: text("id").primaryKey(),
-    giftId: text("gift_id").notNull(),
-    reviewerHash: text("reviewer_hash").notNull(),
-    quilates: integer("quilates").notNull(), // 1..5
-    comment: text("comment"),
-    hidden: boolean("hidden").notNull().default(false),
-    createdAt: text("created_at").notNull(),
-  },
-  (t) => ({
-    giftReviewerIdx: uniqueIndex("reviews_gift_reviewer_idx").on(t.giftId, t.reviewerHash),
-  })
-);
-
-// Valoraciones y respuestas a una reseña (no al regalo). A diferencia de las
-// reseñas, aquí sí se sabe quién es quién: es la página de resultados, para
-// después de que las reseñas ya están cerradas y no hace falta el anonimato.
-export const reviewRatings = pgTable(
-  "review_ratings",
-  {
-    id: text("id").primaryKey(),
-    reviewId: text("review_id").notNull(),
-    raterId: text("rater_id").notNull(),
-    quilates: integer("quilates").notNull(), // 1..5
-    createdAt: text("created_at").notNull(),
-  },
-  (t) => ({
-    reviewRaterIdx: uniqueIndex("review_ratings_review_rater_idx").on(t.reviewId, t.raterId),
-  })
-);
-
-export const reviewComments = pgTable("review_comments", {
-  id: text("id").primaryKey(),
-  reviewId: text("review_id").notNull(),
-  authorId: text("author_id").notNull(),
-  comment: text("comment").notNull(),
-  createdAt: text("created_at").notNull(),
-});
 
 export const config = pgTable("config", {
   key: text("key").primaryKey(),

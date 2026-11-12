@@ -3,15 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-export default function NavBar({
-  esAdmin,
-  mostrarRegalos,
-  mostrarResultados,
-}: {
-  esAdmin: boolean;
-  mostrarRegalos: boolean;
-  mostrarResultados: boolean;
-}) {
+export default function NavBar({ esAdmin }: { esAdmin: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -25,10 +17,6 @@ export default function NavBar({
     { href: "/contrato", label: "Contrato" },
     { href: "/mis-fichas", label: "Escribe pistas" },
     { href: "/caja", label: "Tus pistas" },
-    // No tiene sentido enseñar estos enlaces antes de que haya nada que ver
-    // ahí: solo confunde (la gente los pulsa y se encuentra un "cerrado").
-    ...(mostrarRegalos || esAdmin ? [{ href: "/resenas", label: "Regalos" }] : []),
-    ...(mostrarResultados || esAdmin ? [{ href: "/resultados", label: "Resultados" }] : []),
     ...(esAdmin ? [{ href: "/admin", label: "Admin" }] : []),
   ];
 

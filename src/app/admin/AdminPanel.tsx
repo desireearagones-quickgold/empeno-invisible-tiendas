@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { PuestoRanking } from "@/lib/ranking";
 import type { ResultadoAviso } from "@/lib/avisos";
 
 type Estado = {
@@ -9,19 +8,14 @@ type Estado = {
   sorteoHecho: boolean;
   totalAsignaciones: number;
   fichasPorNumero: number[];
-  regalosConFoto: number;
-  reseñasTotales: number;
 };
 
 type Participante = { id: string; name: string; email: string | null; phone: string | null; accessToken: string };
-type Reseña = { id: string; comment: string | null; quilates: number; hidden: boolean; giftTitle: string | null };
 
 export default function AdminPanel() {
   const [estado, setEstado] = useState<Estado | null>(null);
   const [avisos, setAvisos] = useState<ResultadoAviso[] | null>(null);
   const [participantes, setParticipantes] = useState<Participante[] | null>(null);
-  const [reseñas, setReseñas] = useState<Reseña[] | null>(null);
-  const [ranking, setRanking] = useState<PuestoRanking[] | null>(null);
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -49,8 +43,6 @@ export default function AdminPanel() {
     fetch("/api/admin/whatsapp-sorteo").then((r) => r.json()).then((d) => setConWhatsapp(new Set(d.enviados)));
     fetch("/api/admin/estado").then((r) => r.json()).then(setEstado);
     fetch("/api/admin/participants").then((r) => r.json()).then((d) => setParticipantes(d.participants));
-    fetch("/api/admin/reviews").then((r) => r.json()).then((d) => setReseñas(d.reviews));
-    fetch("/api/admin/ranking").then((r) => r.json()).then((d) => setRanking(d.ranking));
     fetch("/api/admin/avisos").then((r) => r.json()).then((d) => setAvisos(d.avisos));
   }
 
@@ -138,15 +130,6 @@ export default function AdminPanel() {
     recargar();
   }
 
-  async function ocultarReseña(id: string, hidden: boolean) {
-    await fetch(`/api/admin/reviews/${id}/ocultar`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ hidden }),
-    });
-    recargar();
-  }
-
   function copiar(texto: string) {
     navigator.clipboard.writeText(texto).then(() => setMensaje("Copiado."));
   }
@@ -158,9 +141,9 @@ export default function AdminPanel() {
   return (
     <main className="flex-1 p-6 max-w-4xl mx-auto w-full space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Ventanilla de administración</h1>
+        <h1 className="text-2xl font-bold">Administración · Tiendas</h1>
         <p className="text-white/60 text-sm">
-          No ves ni parejas, ni autores de fichas, ni autores de reseñas. Tú también juegas.
+          No ves ni parejas ni quién escribe cada pista.
         </p>
         {mensaje && <p className="mt-2 text-sm text-(--color-dorado)">{mensaje}</p>}
       </div>
@@ -172,11 +155,9 @@ export default function AdminPanel() {
             <li>Participantes: {estado.totalParticipantes}</li>
             <li>Sorteo hecho: {estado.sorteoHecho ? "sí" : "no"} ({estado.totalAsignaciones} parejas)</li>
             <li>
-              Fichas escritas: 1→{estado.fichasPorNumero[0]} · 2→{estado.fichasPorNumero[1]} · 3→
+              Pistas escritas: 1→{estado.fichasPorNumero[0]} · 2→{estado.fichasPorNumero[1]} · 3→
               {estado.fichasPorNumero[2]} (de {estado.totalParticipantes})
             </li>
-            <li>Regalos con foto: {estado.regalosConFoto}/{estado.totalParticipantes}</li>
-            <li>Reseñas totales: {estado.reseñasTotales}</li>
           </ul>
         ) : (
           <p className="text-white/50 text-sm">Cargando…</p>
@@ -313,67 +294,23 @@ export default function AdminPanel() {
       </section>
 
       <section className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-2">
-        <h2 className="font-semibold">Avisos automáticos por WhatsApp</h2>
+        <h2 className="font-semibold">Avisos de pista nueva por WhatsApp</h2>
         <p className="text-xs text-white/50">
-          Se mandan solos a cada persona, a las 9:15 del día que toca, con un botón que la lleva directa a su página.
-          Solo le llegan a quien le corresponde (el recordatorio, a quien aún no ha escrito su pista; la pista nueva,
-          a quien tiene una esperando).
+          Cada pista le llega a quien la recibe a las 9:00 del día siguiente de escribirla, y a las 9:15 se le avisa por
+          WhatsApp con un botón que la lleva directa a sus pistas. Salen solos, no hay que hacer nada.
         </p>
         <ul className="divide-y divide-white/5 text-sm">
           {avisos?.map((a) => (
             <li key={a.id} className="py-2">
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="text-white/80">{a.titulo}</span>
-                <span className="shrink-0 text-xs text-white/50">
-                  {new Date(a.fecha).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", timeZone: "Europe/Madrid" })}
-                </span>
-              </div>
+              <span className="text-white/80">{a.titulo}</span>
               <p className="text-xs text-white/50">
-                {a.estado === "pendiente"
-                  ? `Pendiente · hoy le llegaría a ${a.destinatarios} ${a.destinatarios === 1 ? "persona" : "personas"}`
-                  : `Enviado a ${a.enviados} de ${a.destinatarios}`}
+                {a.destinatarios === 0
+                  ? "Todavía no le ha llegado a nadie"
+                  : `Le ha llegado a ${a.destinatarios} · avisadas ${a.enviados}${a.pendientes ? ` · ${a.pendientes} se avisarán a las 9:15` : ""}`}
               </p>
             </li>
           ))}
         </ul>
-      </section>
-
-      <section className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-2">
-        <h2 className="font-semibold">Moderación de reseñas</h2>
-        <ul className="divide-y divide-white/5 text-sm">
-          {reseñas?.map((r) => (
-            <li key={r.id} className="flex items-center justify-between gap-2 py-1">
-              <span className={r.hidden ? "line-through text-white/40" : "text-white/70"}>
-                {r.giftTitle}: {"◆".repeat(r.quilates)} {r.comment}
-              </span>
-              <button onClick={() => ocultarReseña(r.id, !r.hidden)} className="text-xs text-(--color-dorado) underline shrink-0">
-                {r.hidden ? "Mostrar" : "Ocultar"}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-2">
-        <h2 className="font-semibold">Resultado de la votación</h2>
-        <p className="text-xs text-white/50">
-          Solo lo ves tú aquí. Gana el regalo con más quilates en total; empates por nota media y luego por
-          nº de reseñas.
-        </p>
-        {ranking && ranking.length === 0 && <p className="text-white/50 text-sm">Todavía no hay reseñas.</p>}
-        <ol className="divide-y divide-white/5 text-sm">
-          {ranking?.map((r, i) => (
-            <li key={r.giftId} className="flex items-center justify-between gap-2 py-2">
-              <span>
-                <span className="text-(--color-dorado) font-semibold">{i + 1}.</span> {r.title}
-                <span className="text-white/40"> (para {r.receiverName ?? "—"})</span>
-              </span>
-              <span className="shrink-0 text-white/70">
-                {r.media.toFixed(1)} ◆ · {r.numReseñas} reseñas · {r.totalQuilates} quilates
-              </span>
-            </li>
-          ))}
-        </ol>
       </section>
     </main>
   );

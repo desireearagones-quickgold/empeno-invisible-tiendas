@@ -4,35 +4,29 @@ import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { CAMPOS_FICHA } from "@/lib/validacionFicha";
 
-type Resultado = { hayFicha: boolean; campos?: Record<string, string>; mensaje?: string };
+type Resultado = { campos?: Record<string, string> };
 
 export default function Compartimento({
   numero,
   desbloqueada,
-  fechaDesbloqueo,
-  hayFicha,
   campos,
   visto,
 }: {
   numero: 1 | 2 | 3;
   desbloqueada: boolean;
-  fechaDesbloqueo: string;
-  hayFicha: boolean;
   campos: Record<string, string> | null;
   visto: boolean;
 }) {
   const reducida = useReducedMotion();
   const [abriendo, setAbriendo] = useState(false);
-  const [resultado, setResultado] = useState<Resultado | null>(
-    visto && hayFicha ? { hayFicha, campos: campos ?? undefined } : null
-  );
+  const [resultado, setResultado] = useState<Resultado | null>(visto && campos ? { campos } : null);
   const [error, setError] = useState<string | null>(null);
 
   async function abrir() {
     setAbriendo(true);
     setError(null);
     const res = await fetch(`/api/caja/${numero}`, { method: "POST" });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({ error: "No se ha podido abrir. Prueba otra vez." }));
     if (!res.ok) {
       setError(data.error);
       setAbriendo(false);
@@ -49,23 +43,12 @@ export default function Compartimento({
       <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center space-y-2">
         <div className="text-3xl">🔒</div>
         <p className="font-semibold">Pista {numero}</p>
-        <p className="text-xs text-white/50">
-          Se abre el {new Date(fechaDesbloqueo).toLocaleDateString("es-ES", { day: "numeric", month: "long", timeZone: "Europe/Madrid" })}
-        </p>
+        <p className="text-xs text-white/50">Todavía no ha llegado. Te avisaremos por WhatsApp.</p>
       </div>
     );
   }
 
   if (resultado) {
-    if (!resultado.hayFicha) {
-      return (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center space-y-2">
-          <p className="font-semibold">Pista {numero}</p>
-          <p className="text-sm text-white/60">{resultado.mensaje}</p>
-        </div>
-      );
-    }
-
     const definicion = CAMPOS_FICHA[numero];
     return (
       <motion.div

@@ -47,6 +47,11 @@ export function randomContractNumber(): string {
   return String(crypto.randomInt(0, 10000)).padStart(4, "0");
 }
 
+// Los enlaces de las tiendas empiezan por "tienda-": los botones de las
+// plantillas de WhatsApp apuntan al dominio de la oficina, y la oficina
+// reenvía aquí los enlaces que llevan este prefijo.
+export const PREFIJO_TOKEN = "tienda-";
+
 export function randomToken(bytes = 32): string {
-  return crypto.randomBytes(bytes).toString("base64url");
+  return PREFIJO_TOKEN + crypto.randomBytes(bytes).toString("base64url");
 }

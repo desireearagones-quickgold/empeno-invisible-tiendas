@@ -143,7 +143,7 @@ export default function ContratoAnimado({
             <td className="py-1 text-right font-semibold align-top">{nombreReceptor}</td>
           </tr>
           <tr className="border-b border-black/10">
-            <td className="py-1">Fecha de devolución<br /><span className="text-black/50">(entregas el regalo)</span></td>
+            <td className="py-1">Entrega del regalo</td>
             <td className="py-1 text-right font-semibold align-top">{fechaDevolucion}</td>
           </tr>
           <tr>
@@ -166,7 +166,7 @@ export default function ContratoAnimado({
 
       <p className="mt-4 text-xs leading-relaxed text-black/70">
         <strong>Condiciones:</strong> hasta la fecha de devolución, no se puede contar a nadie quién es el
-        depositante (o sea: no digas que el regalo es tuyo). El día de la entrega, el regalo se da envuelto
+        depositante (o sea: no digas que el regalo es tuyo). En la cena, el regalo se da envuelto
         y marcado solo con el código de lote de arriba, nunca con un nombre.
       </p>
     </>

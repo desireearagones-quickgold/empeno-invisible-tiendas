@@ -4,46 +4,39 @@ import { sesionActual } from "@/lib/auth";
 import { db } from "@/db/client";
 import { assignments, fichas, fichaOpens } from "@/db/schema";
 import { hashId } from "@/lib/crypto";
-import { calendario, fichaDesbloqueada } from "@/lib/calendario";
+import { pistaAbierta } from "@/lib/calendario";
 import Compartimento from "./Compartimento";
 
 export default async function Caja() {
   const sesion = await sesionActual();
   if (!sesion) redirect("/");
 
-  const cal = calendario();
   const receiverHash = hashId(sesion.id);
   const [miAsignacion] = await db.select().from(assignments).where(eq(assignments.receiverHash, receiverHash));
 
   const numeros = [1, 2, 3] as const;
   const compartimentos = await Promise.all(
     numeros.map(async (n) => {
-      const desbloqueada = fichaDesbloqueada(n);
-      let camposGuardados: Record<string, string> | null = null;
+      let campos: Record<string, string> | null = null;
       let visto = false;
 
-      if (desbloqueada && miAsignacion) {
+      if (miAsignacion) {
         const [ficha] = await db
           .select()
           .from(fichas)
           .where(and(eq(fichas.authorHash, miAsignacion.giverHash), eq(fichas.number, n)));
-        camposGuardados = (ficha?.fields as Record<string, string>) ?? null;
-
-        const [open] = await db
-          .select()
-          .from(fichaOpens)
-          .where(and(eq(fichaOpens.receiverHash, receiverHash), eq(fichaOpens.number, n)));
-        visto = Boolean(open);
+        // Lo que todavía no ha llegado ni se manda al navegador.
+        if (ficha && pistaAbierta(ficha.abreEn)) {
+          campos = ficha.fields as Record<string, string>;
+          const [open] = await db
+            .select()
+            .from(fichaOpens)
+            .where(and(eq(fichaOpens.receiverHash, receiverHash), eq(fichaOpens.number, n)));
+          visto = Boolean(open);
+        }
       }
 
-      return {
-        numero: n,
-        desbloqueada,
-        fechaDesbloqueo: cal.fichas[n - 1].toISOString(),
-        hayFicha: camposGuardados !== null,
-        campos: camposGuardados,
-        visto,
-      };
+      return { numero: n, desbloqueada: campos !== null, campos, visto };
     })
   );
 
@@ -52,8 +45,8 @@ export default async function Caja() {
       <div>
         <h1 className="text-2xl font-bold">Pistas de tu amigo invisible</h1>
         <p className="text-white/60">
-          Quien te ha tocado a ti va dejando pistas sobre sí mismo (no sobre el regalo), una cada semana, para que
-          vayas adivinando quién es.
+          Quien te regala a ti te va dejando pistas sobre quién es (no sobre el regalo), para que vayas
+          adivinándolo. Cada pista llega a las 9:00 del día siguiente de escribirla, y te avisamos por WhatsApp.
         </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">

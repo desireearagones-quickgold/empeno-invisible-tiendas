@@ -107,8 +107,10 @@ export async function enviarAvisoSorteo(telefono: string, enlacePersonal: string
 export async function enviarAvisoSorteoConBoton(telefono: string, token: string) {
   return enviarWhatsApp(telefono, {
     // whats_amigo_invisible (en) se sustituyó por esta: Meta no dejaba editar su texto.
-    template: "ventanilla_abierta",
-    lang: "es",
+    // Configurable: si se crea una plantilla propia para las tiendas, basta con
+    // cambiar la variable de entorno.
+    template: process.env.WHATSAPP_PLANTILLA_SORTEO ?? "ventanilla_abierta",
+    lang: process.env.WHATSAPP_PLANTILLA_SORTEO_IDIOMA ?? "es",
     botonSufijo: token,
     imagenCabecera: `${process.env.APP_URL}/whatsapp-cabecera.png`,
   });

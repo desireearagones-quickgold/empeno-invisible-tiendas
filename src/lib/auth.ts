@@ -5,7 +5,7 @@ import { participants, sessions } from "@/db/schema";
 import { randomToken } from "@/lib/crypto";
 
 const COOKIE_NAME = "empeno_session";
-const SESION_DIAS = 60; // cubre todo el calendario (sorteo → cena) con margen
+const SESION_DIAS = 60; // cubre del sorteo a la cena con margen
 
 /**
  * El único "login" que existe: el enlace personal de cada participante

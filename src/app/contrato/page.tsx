@@ -4,35 +4,21 @@ import { sesionActual } from "@/lib/auth";
 import { db } from "@/db/client";
 import { assignments, participants, config } from "@/db/schema";
 import { hashId, decryptId } from "@/lib/crypto";
-import { calendario, sorteoAbierto } from "@/lib/calendario";
 import ContratoAnimado from "./ContratoAnimado";
 import TicketRecogida from "./TicketRecogida";
-import CuentaAtras from "@/components/CuentaAtras";
 
 export default async function Contrato() {
   const sesion = await sesionActual();
   if (!sesion) redirect("/");
 
-  const cal = calendario();
-
-  if (!sorteoAbierto()) {
-    return (
-      <main className="flex-1 flex flex-col items-center justify-center gap-6 p-6 text-center">
-        <h1 className="text-2xl font-bold text-(--color-dorado)">Ventanilla cerrada</h1>
-        <p className="max-w-sm text-white/70">
-          El sorteo se abre el {cal.sorteo.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Madrid" })} a
-          las {cal.sorteo.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" })}.
-        </p>
-        <CuentaAtras hasta={cal.sorteo.toISOString()} />
-      </main>
-    );
-  }
-
   const [sorteoHecho] = await db.select().from(config).where(eq(config.key, "sorteo_hecho"));
   if (sorteoHecho?.value !== "true") {
     return (
-      <main className="flex-1 flex items-center justify-center p-6 text-center text-white/70">
-        <p>El sorteo todavía no se ha ejecutado. Pregunta a las organizadoras.</p>
+      <main className="flex-1 flex flex-col items-center justify-center gap-4 p-6 text-center">
+        <h1 className="text-2xl font-bold text-(--color-dorado)">Todavía no hay sorteo</h1>
+        <p className="max-w-sm text-white/70">
+          Cuando se haga te llegará un WhatsApp. Mientras, ya puedes ir escribiendo tus pistas.
+        </p>
       </main>
     );
   }
@@ -43,21 +29,18 @@ export default async function Contrato() {
   if (!asignacion) {
     return (
       <main className="flex-1 flex items-center justify-center p-6 text-center text-white/70">
-        <p>No encontramos tu contrato. Avisa a las organizadoras.</p>
+        <p>No encontramos tu contrato. Avisa a la organización.</p>
       </main>
     );
   }
 
   const receptorId = decryptId(asignacion.receiverEnc);
   const [receptor] = await db.select().from(participants).where(eq(participants.id, receptorId));
+  const [fechaSorteo] = await db.select().from(config).where(eq(config.key, "sorteo_fecha"));
 
-  // Mi "contrato de empeño" de verdad: el que recibo YO como destinatario de
-  // otra persona. No dice quién me regala (nunca se descifra ni se consulta
-  // ese dato aquí), solo mi propio lote para recoger el paquete.
-  const [miTicket] = await db
-    .select()
-    .from(assignments)
-    .where(eq(assignments.receiverHash, hashId(sesion.id)));
+  // Mi propio lote como destinatario de otra persona: el número que llevará
+  // escrito el paquete que me toca en la cena. Nunca dice quién me regala.
+  const [miTicket] = await db.select().from(assignments).where(eq(assignments.receiverHash, hashId(sesion.id)));
 
   return (
     <main className="flex-1 p-6">
@@ -67,16 +50,14 @@ export default async function Contrato() {
           contractNumber={asignacion.contractNumber}
           nombreDepositante={sesion.name}
           nombreReceptor={receptor?.name ?? "—"}
-          fechaOperacion={cal.sorteo.toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/Madrid" })}
-          fechaDevolucion={cal.entrega.toLocaleDateString("es-ES", { day: "numeric", month: "long", timeZone: "Europe/Madrid" })}
+          fechaOperacion={
+            fechaSorteo
+              ? new Date(fechaSorteo.value).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/Madrid" })
+              : "—"
+          }
+          fechaDevolucion="El día de la cena"
         />
-        {miTicket && (
-          <TicketRecogida
-            contractNumber={miTicket.contractNumber}
-            nombreTitular={sesion.name}
-            fechaRecogida={cal.entrega.toLocaleDateString("es-ES", { day: "numeric", month: "long", timeZone: "Europe/Madrid" })}
-          />
-        )}
+        {miTicket && <TicketRecogida contractNumber={miTicket.contractNumber} nombreTitular={sesion.name} />}
       </div>
     </main>
   );

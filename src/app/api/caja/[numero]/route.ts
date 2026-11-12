@@ -4,7 +4,7 @@ import { db } from "@/db/client";
 import { assignments, fichas, fichaOpens } from "@/db/schema";
 import { requerirSesion } from "@/lib/contexto";
 import { hashId } from "@/lib/crypto";
-import { fichaDesbloqueada } from "@/lib/calendario";
+import { pistaAbierta } from "@/lib/calendario";
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ numero: string }> }) {
   const ctx = await requerirSesion();
@@ -12,10 +12,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ nu
 
   const numero = Number((await params).numero);
   if (![1, 2, 3].includes(numero)) {
-    return NextResponse.json({ error: "Compartimento no válido." }, { status: 400 });
-  }
-  if (!fichaDesbloqueada(numero as 1 | 2 | 3)) {
-    return NextResponse.json({ error: "Todavía está cerrado con candado." }, { status: 403 });
+    return NextResponse.json({ error: "Pista no válida." }, { status: 400 });
   }
 
   const receiverHash = hashId(ctx.participante.id);
@@ -29,14 +26,16 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ nu
     .from(fichas)
     .where(and(eq(fichas.authorHash, miAsignacion.giverHash), eq(fichas.number, numero)));
 
+  // Sin pista o sin llegar todavía, la misma respuesta: no se dice si está
+  // escrita, que eso ya da una idea de cuándo la escribió.
+  if (!ficha || !pistaAbierta(ficha.abreEn)) {
+    return NextResponse.json({ error: "Esta pista todavía no ha llegado." }, { status: 403 });
+  }
+
   await db
     .insert(fichaOpens)
     .values({ receiverHash, number: numero, openedAt: new Date().toISOString() })
     .onConflictDoNothing();
-
-  if (!ficha) {
-    return NextResponse.json({ hayFicha: false, mensaje: "El tasador está de vacaciones. Esta semana no hay pista." });
-  }
 
   return NextResponse.json({ hayFicha: true, campos: ficha.fields, numero });
 }

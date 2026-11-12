@@ -7,7 +7,7 @@ export const CAMPOS_FICHA: Record<
       clave: "pieza",
       etiqueta: "Pieza",
       ayuda: "Descríbete con un apodo, sin decir tu nombre",
-      placeholder: "compañera de oficina",
+      placeholder: "compañera de tienda",
     },
     {
       clave: "quilataje",
@@ -45,7 +45,7 @@ export const CAMPOS_FICHA: Record<
       clave: "origen",
       etiqueta: "Origen",
       ayuda: "De dónde eres o algo de tu pasado",
-      placeholder: "ha pasado por tres ciudades antes de llegar a esta oficina",
+      placeholder: "ha pasado por tres ciudades antes de llegar a esta tienda",
     },
     {
       clave: "observaciones",
@@ -58,7 +58,7 @@ export const CAMPOS_FICHA: Record<
     {
       clave: "ubicacion",
       etiqueta: "Ubicación habitual",
-      ayuda: "Dónde se te suele ver en la oficina",
+      ayuda: "Dónde se te suele ver en la tienda",
       placeholder: "zona ventana, segunda mesa",
     },
     {

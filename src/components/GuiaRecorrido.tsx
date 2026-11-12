@@ -22,44 +22,27 @@ function suscribir(aviso: () => void) {
   };
 }
 
-export type FechasGuia = { limites: string[]; fichas: string[]; entrega: string };
-
-function dias(isos: string[]) {
-  const fechas = isos.map((i) => new Date(i));
-  const mes = (d: Date) => d.toLocaleDateString("es-ES", { month: "long", timeZone: "Europe/Madrid" });
-  const dia = (d: Date) => d.toLocaleDateString("es-ES", { day: "numeric", timeZone: "Europe/Madrid" });
-  const mismoMes = fechas.every((d) => mes(d) === mes(fechas[0]));
-  const partes = fechas.map((d) => (mismoMes ? dia(d) : `${dia(d)} de ${mes(d)}`));
-  const lista = `${partes.slice(0, -1).join(", ")} y ${partes.at(-1)}`;
-  return mismoMes ? `${lista} de ${mes(fechas[0])}` : lista;
-}
-
-function pasos(f: FechasGuia) {
-  const entrega = new Date(f.entrega).toLocaleDateString("es-ES", { day: "numeric", month: "long", timeZone: "Europe/Madrid" });
-  return [
-    {
-      ruta: "/contrato",
-      titulo: "Tu contrato",
-      texto:
-        "Aquí puedes volver siempre que quieras a ver a quién le regalas (solo lo ves tú) y tu número de lote. El regalo va envuelto y con ese número escrito, nunca con un nombre.",
-    },
-    {
-      ruta: "/mis-fichas",
-      titulo: "Escribe pistas sobre ti",
-      texto: `Escribe tres pistas sobre ti. Lo mejor es dejarlas todas escritas ya: la persona a la que regalas recibirá una cada lunes para intentar adivinar quién es. Puedes corregir cada una hasta el domingo antes de que se entregue (${dias(f.limites)}). Habla de ti, no del regalo.`,
-    },
-    {
-      ruta: "/caja",
-      titulo: "Tus pistas",
-      texto: `Aquí te llegan las pistas que te deja quien te regala a ti: una cada lunes (${dias(f.fichas)}). Te avisaremos por WhatsApp cuando haya una nueva.`,
-    },
-    {
-      ruta: "/caja",
-      titulo: "Y al final, los regalos",
-      texto: `El ${entrega} se entregan los regalos. Ese día subes la foto del tuyo y valoras los de los demás. Cuando se cierren las valoraciones, saldrá el regalo ganador.`,
-    },
-  ];
-}
+// Sin fechas: en las tiendas cada pista llega al día siguiente de escribirla.
+const PASOS = [
+  {
+    ruta: "/contrato",
+    titulo: "Tu contrato",
+    texto:
+      "Aquí puedes volver siempre que quieras a ver a quién le regalas (solo lo ves tú). Al lado tienes tu número de lote: en la cena, tu regalo será el paquete con ese número. El que tú regalas va envuelto y con el lote de tu contrato escrito, nunca con un nombre.",
+  },
+  {
+    ruta: "/mis-fichas",
+    titulo: "Escribe pistas sobre ti",
+    texto:
+      "Escribe tres pistas sobre ti, cuando quieras. Cada una le llega a la persona a la que regalas a las 9:00 del día siguiente de guardarla, así no sabrá que la acabas de escribir tú aunque esté a tu lado. Habla de ti, no del regalo.",
+  },
+  {
+    ruta: "/caja",
+    titulo: "Tus pistas",
+    texto:
+      "Aquí te llegan las pistas que te deja quien te regala a ti. Te avisaremos por WhatsApp cuando haya una nueva. ¡A ver si adivinas quién es antes de la cena!",
+  },
+];
 
 function leer(): number | null {
   try {
@@ -78,11 +61,11 @@ function guardar(paso: number | null) {
   window.dispatchEvent(new Event(EVENTO_CAMBIO));
 }
 
-export default function GuiaRecorrido({ fechas }: { fechas: FechasGuia }) {
+export default function GuiaRecorrido() {
   const pathname = usePathname();
   const router = useRouter();
   const paso = useSyncExternalStore(suscribir, leer, () => null);
-  const lista = pasos(fechas);
+  const lista = PASOS;
 
   if (paso === null || paso > lista.length) return null;
   const actual = lista[paso - 1];
