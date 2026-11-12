@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { empezarGuia } from "@/components/GuiaRecorrido";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import LogoQuickgold from "@/components/LogoQuickgold";
 
 export default function ContratoAnimado({
@@ -20,10 +20,12 @@ export default function ContratoAnimado({
   fechaOperacion: string;
   fechaDevolucion: string;
 }) {
-  const [mostrarAnimacion, setMostrarAnimacion] = useState(!yaVisto);
+  // Por seguridad el sobre está SIEMPRE cerrado al entrar (alguien puede estar
+  // mirando la pantalla): el encargo solo se ve mientras está abierto en grande,
+  // y al cerrarlo vuelve al sobre.
   const [paso, setPaso] = useState<"cerrado" | "abriendo" | "modal">("cerrado");
-  // La guía solo arranca la primera vez que se abre el sobre; al volver a
-  // abrirlo con "Volver a ver" el contrato se cierra sin más.
+  // La guía solo arranca la primera vez que se abre el sobre; las siguientes
+  // veces el contrato se cierra sin más.
   const [primeraVez, setPrimeraVez] = useState(!yaVisto);
   const reducida = useReducedMotion();
   const [fechaImpresion] = useState(() => new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Madrid" }));
@@ -33,26 +35,19 @@ export default function ContratoAnimado({
     // quien entra y sale sin abrirlo lo encuentra ya abierto la siguiente vez.
     if (!yaVisto) fetch("/api/contrato/visto", { method: "POST" }).catch(() => {});
     if (reducida) {
-      setMostrarAnimacion(false);
-      if (primeraVez) {
-        setPrimeraVez(false);
-        empezarGuia();
-      }
+      setPaso("modal");
       return;
     }
     setPaso("abriendo");
     setTimeout(() => setPaso("modal"), 2200);
   }
 
-  function continuar() {
-    setMostrarAnimacion(false);
+  function cerrar() {
     setPaso("cerrado");
-  }
-
-  function volverAVer() {
-    setPrimeraVez(false);
-    setPaso("cerrado");
-    setMostrarAnimacion(true);
+    if (primeraVez) {
+      setPrimeraVez(false);
+      empezarGuia();
+    }
   }
 
   const sobreAbierto = paso !== "cerrado";
@@ -182,10 +177,7 @@ export default function ContratoAnimado({
     // debe poder imprimirse ni guardarse en PDF (solo el ticket de recogida
     // de abajo es imprimible). Ver TicketRecogida.tsx.
     <div className="h-full w-full max-w-md print:hidden">
-      <AnimatePresence>
-        {mostrarAnimacion && (
-          <motion.div
-            key="overlay"
+      <motion.div
             className={
               paso === "cerrado"
                 ? "flex items-center justify-center"
@@ -204,7 +196,11 @@ export default function ContratoAnimado({
                 {lineas}
                 {flap}
                 {sello}
-                {!sobreAbierto && <span className="absolute bottom-3 text-sm text-black/50">Toca para abrir</span>}
+                {!sobreAbierto && (
+                  <span className="absolute bottom-3 text-sm text-black/50">
+                    {primeraVez ? "Toca para abrir" : "Toca para ver tu encargo"}
+                  </span>
+                )}
               </motion.button>
             ) : (
               <motion.div
@@ -214,15 +210,12 @@ export default function ContratoAnimado({
                 className="documento max-h-[85vh] w-full max-w-md overflow-y-auto rounded-sm border border-black/10 bg-(--color-crema) p-6 text-(--color-negro) shadow-2xl text-sm"
               >
                 {contenido}
-                <div className="mt-4">
+                <p className="mt-4 text-center text-[10px] text-black/40">
+                  Este encargo solo se ve en pantalla: no se imprime ni se guarda en PDF.
+                </p>
+                <div className="mt-2">
                   <button
-                    onClick={() => {
-                      continuar();
-                      if (primeraVez) {
-                        setPrimeraVez(false);
-                        empezarGuia();
-                      }
-                    }}
+                    onClick={cerrar}
                     className="w-full rounded-md bg-(--color-dorado-oscuro) py-2 text-sm font-semibold text-(--color-crema)"
                   >
                     {primeraVez ? "Siguiente: cómo sigue el juego" : "Cerrar"}
@@ -231,36 +224,12 @@ export default function ContratoAnimado({
               </motion.div>
             )}
           </motion.div>
-        )}
-      </AnimatePresence>
 
-      <AnimatePresence mode="wait">
-        {!mostrarAnimacion && (
-          <motion.div
-            key="contrato"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: reducida ? 0.01 : 0.3 }}
-            className="documento flex h-full flex-col rounded-sm border border-black/10 bg-(--color-crema) p-6 text-(--color-negro) shadow-2xl text-sm"
-          >
-            {contenido}
-            <div className="mt-auto pt-4">
-              <p className="text-center text-[10px] text-black/40">
-                Este encargo solo se ve en pantalla: no se imprime ni se guarda en PDF.
-              </p>
-              <button
-                onClick={volverAVer}
-                className="mt-2 w-full rounded-md border border-(--color-dorado-oscuro) py-2 text-sm font-semibold text-(--color-dorado-oscuro) hover:bg-(--color-dorado-oscuro)/10"
-              >
-                Volver a ver
-              </button>
-              <button onClick={empezarGuia} className="mt-2 w-full py-1 text-xs text-(--color-dorado-oscuro) underline">
-                Ver cómo funciona el juego
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {!primeraVez && paso === "cerrado" && (
+        <button onClick={empezarGuia} className="mt-3 w-full py-1 text-xs text-(--color-dorado) underline">
+          Ver cómo funciona el juego
+        </button>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import LogoQuickgold from "@/components/LogoQuickgold";
 
 /**
@@ -27,6 +27,13 @@ function useImprimir() {
   return { imprimir, noImprime };
 }
 
+// Móvil = pantalla táctil. Ahí no se ofrece imprimir: el contrato vale en la
+// pantalla y una captura basta. Se mira en el navegador (en el servidor, false).
+const sinSuscripcion = () => () => {};
+function useEsMovil() {
+  return useSyncExternalStore(sinSuscripcion, () => window.matchMedia("(pointer: coarse)").matches, () => false);
+}
+
 /**
  * El "Contrato de empeño" de verdad: el que imprime quien RECIBE un regalo,
  * para presentarlo en la ventanilla y recogerlo. A propósito nunca dice quién
@@ -42,6 +49,7 @@ export default function TicketRecogida({
   fechaRecogida: string;
 }) {
   const { imprimir, noImprime } = useImprimir();
+  const esMovil = useEsMovil();
   return (
     <div className="h-full w-full max-w-md">
       <div className="documento flex h-full flex-col rounded-sm border border-black/10 bg-(--color-crema) p-6 text-(--color-negro) shadow-2xl text-sm">
@@ -72,20 +80,25 @@ export default function TicketRecogida({
           </p>
 
           <div className="print:hidden mt-6">
-            <button
-              onClick={imprimir}
-              className="w-full rounded-md bg-(--color-dorado-oscuro) py-2 text-sm font-semibold text-(--color-crema) hover:opacity-90"
-            >
-              Imprimir / Guardar PDF
-            </button>
-            {noImprime ? (
-              <p className="mt-2 rounded border border-black/15 bg-white/60 p-2 text-xs leading-relaxed text-black/80">
-                Desde aquí tu navegador no deja imprimir. <strong>Haz una captura de pantalla de este contrato</strong>:
-                vale igual para recoger tu joya. Si lo quieres en papel, abre el enlace en Chrome o Safari (menú ⋮ o
-                el icono de compartir → «Abrir en el navegador») y vuelve a pulsar.
+            {esMovil ? (
+              <p className="rounded-md border border-(--color-dorado-oscuro) bg-(--color-dorado-oscuro)/10 p-3 text-center text-sm font-semibold text-black/80">
+                📸 Haz una captura de pantalla de este contrato: vale para recoger tu joya.
               </p>
             ) : (
-              <p className="mt-2 text-center text-xs text-black/50">En el móvil basta con una captura de pantalla.</p>
+              <>
+                <button
+                  onClick={imprimir}
+                  className="w-full rounded-md bg-(--color-dorado-oscuro) py-2 text-sm font-semibold text-(--color-crema) hover:opacity-90"
+                >
+                  Imprimir / Guardar PDF
+                </button>
+                {noImprime && (
+                  <p className="mt-2 rounded border border-black/15 bg-white/60 p-2 text-xs leading-relaxed text-black/80">
+                    Desde aquí tu navegador no deja imprimir. <strong>Haz una captura de pantalla de este contrato</strong>:
+                    vale igual para recoger tu joya.
+                  </p>
+                )}
+              </>
             )}
           </div>
         </div>
