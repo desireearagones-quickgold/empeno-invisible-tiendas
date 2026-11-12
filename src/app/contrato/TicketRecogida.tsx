@@ -1,6 +1,31 @@
 "use client";
 
+import { useState } from "react";
 import LogoQuickgold from "@/components/LogoQuickgold";
+
+/**
+ * window.print() no hace nada en el navegador de dentro de WhatsApp/Teams, y
+ * desde ahí abre casi todo el mundo el enlace. Si en un momento no ha salido
+ * la ventana de imprimir (no llega "beforeprint"), se explica qué hacer.
+ */
+function useImprimir() {
+  const [noImprime, setNoImprime] = useState(false);
+  function imprimir() {
+    let salio = false;
+    const alSalir = () => { salio = true; };
+    window.addEventListener("beforeprint", alSalir, { once: true });
+    try {
+      window.print();
+    } catch {
+      // algunos navegadores de apps lanzan error en vez de no hacer nada
+    }
+    setTimeout(() => {
+      window.removeEventListener("beforeprint", alSalir);
+      if (!salio) setNoImprime(true);
+    }, 1200);
+  }
+  return { imprimir, noImprime };
+}
 
 /**
  * El "Contrato de empeño" de verdad: el que imprime quien RECIBE un regalo,
@@ -16,6 +41,7 @@ export default function TicketRecogida({
   nombreTitular: string;
   fechaRecogida: string;
 }) {
+  const { imprimir, noImprime } = useImprimir();
   return (
     <div className="h-full w-full max-w-md">
       <div className="documento flex h-full flex-col rounded-sm border border-black/10 bg-(--color-crema) p-6 text-(--color-negro) shadow-2xl text-sm">
@@ -47,11 +73,20 @@ export default function TicketRecogida({
 
           <div className="print:hidden mt-6">
             <button
-              onClick={() => window.print()}
+              onClick={imprimir}
               className="w-full rounded-md bg-(--color-dorado-oscuro) py-2 text-sm font-semibold text-(--color-crema) hover:opacity-90"
             >
               Imprimir / Guardar PDF
             </button>
+            {noImprime ? (
+              <p className="mt-2 rounded border border-black/15 bg-white/60 p-2 text-xs leading-relaxed text-black/80">
+                Desde aquí tu navegador no deja imprimir. <strong>Haz una captura de pantalla de este contrato</strong>:
+                vale igual para recoger tu joya. Si lo quieres en papel, abre el enlace en Chrome o Safari (menú ⋮ o
+                el icono de compartir → «Abrir en el navegador») y vuelve a pulsar.
+              </p>
+            ) : (
+              <p className="mt-2 text-center text-xs text-black/50">En el móvil basta con una captura de pantalla.</p>
+            )}
           </div>
         </div>
       </div>
