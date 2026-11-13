@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
-import { sesionActual } from "@/lib/auth";
+import { sesionActual, esAdmin } from "@/lib/auth";
 import { db } from "@/db/client";
 import { assignments, participants, config } from "@/db/schema";
 import { hashId, decryptId } from "@/lib/crypto";
@@ -25,6 +25,16 @@ export default async function Contrato() {
 
   const giverHash = hashId(sesion.id);
   const [asignacion] = await db.select().from(assignments).where(eq(assignments.giverHash, giverHash));
+
+  if (!asignacion && esAdmin(sesion.phone)) {
+    return (
+      <main className="flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center">
+        <h1 className="text-2xl font-bold text-(--color-dorado)">Eres la organizadora</h1>
+        <p className="max-w-sm text-white/70">No entras en el sorteo de las tiendas, así que no tienes contrato. Todo lo tuyo está en el panel.</p>
+        <a href="/admin" className="rounded bg-(--color-dorado) px-4 py-2 text-sm font-semibold text-black">Ir al panel</a>
+      </main>
+    );
+  }
 
   if (!asignacion) {
     return (
