@@ -6,6 +6,7 @@ import { participants, assignments, config } from "@/db/schema";
 import { requerirAdmin } from "@/lib/contexto";
 import { generarCadena } from "@/lib/sorteo";
 import { encryptId, hashId, randomContractNumber } from "@/lib/crypto";
+import { esAdmin } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   const ctx = await requerirAdmin();
@@ -24,7 +25,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "El sorteo ya se ha ejecutado. No se puede repetir." }, { status: 409 });
   }
 
-  const todos = await db.select().from(participants);
+  // La organizadora (teléfono de ADMIN_PHONES) no juega en las tiendas.
+  const todos = (await db.select().from(participants)).filter((p) => !esAdmin(p.phone));
   if (todos.length < 3) {
     return NextResponse.json({ error: "Hacen falta al menos 3 participantes." }, { status: 400 });
   }

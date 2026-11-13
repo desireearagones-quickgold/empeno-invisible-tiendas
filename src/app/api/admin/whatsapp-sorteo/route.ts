@@ -4,6 +4,7 @@ import { db } from "@/db/client";
 import { config, participants } from "@/db/schema";
 import { requerirAdmin } from "@/lib/contexto";
 import { claveSorteo, mandarWhatsappSorteo } from "@/lib/avisos";
+import { esAdmin } from "@/lib/auth";
 
 export const maxDuration = 60;
 
@@ -32,7 +33,8 @@ export async function POST() {
   }
 
   const enviados = await yaEnviados();
-  const todos = await db.select().from(participants);
+  // La organizadora no juega en las tiendas: no entra en el sorteo ni recibe el aviso.
+  const todos = (await db.select().from(participants)).filter((p) => !esAdmin(p.phone));
   const sinTelefono = todos.filter((p) => !p.phone).map((p) => p.name);
   const pendientes = todos.filter((p) => p.phone && !enviados.has(claveSorteo(p.id)));
 

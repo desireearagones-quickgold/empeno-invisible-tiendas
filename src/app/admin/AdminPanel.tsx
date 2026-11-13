@@ -10,7 +10,7 @@ type Estado = {
   fichasPorNumero: number[];
 };
 
-type Participante = { id: string; name: string; email: string | null; phone: string | null; accessToken: string };
+type Participante = { id: string; name: string; email: string | null; phone: string | null; accessToken: string; organiza?: boolean };
 
 export default function AdminPanel() {
   const [estado, setEstado] = useState<Estado | null>(null);
@@ -265,6 +265,7 @@ export default function AdminPanel() {
             <li key={p.id} className="flex items-center justify-between gap-2 py-1.5">
               <span className="truncate">
                 {p.name} <span className="text-white/40">({p.phone ?? "sin teléfono"})</span>
+                {p.organiza && <span className="ml-1 text-xs text-(--color-dorado)">organizadora, no juega</span>}
                 {conWhatsapp.has(p.id) && <span className="ml-1 text-xs text-green-400">✓ enviado</span>}
               </span>
               <span className="flex shrink-0 gap-2">

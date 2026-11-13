@@ -5,6 +5,7 @@ import { db } from "@/db/client";
 import { participants, assignments, config } from "@/db/schema";
 import { requerirAdmin } from "@/lib/contexto";
 import { hashId, randomToken } from "@/lib/crypto";
+import { esAdmin } from "@/lib/auth";
 
 function limpiarTelefono(valor: string | undefined): string | null {
   if (!valor) return null;
@@ -16,7 +17,8 @@ export async function GET() {
   const ctx = await requerirAdmin();
   if ("error" in ctx) return ctx.error;
 
-  return NextResponse.json({ participants: await db.select().from(participants) });
+  const todos = await db.select().from(participants);
+  return NextResponse.json({ participants: todos.map((p) => ({ ...p, organiza: esAdmin(p.phone) })) });
 }
 
 export async function POST(req: NextRequest) {
