@@ -28,7 +28,7 @@ const PASOS = [
     ruta: "/contrato",
     titulo: "Tu contrato",
     texto:
-      "Aquí puedes volver siempre que quieras a ver a quién le regalas (solo lo ves tú). Al lado tienes tu número de lote: en la cena, tu regalo será el paquete con ese número. El que tú regalas va envuelto y con el lote de tu contrato escrito, nunca con un nombre.",
+      "Aquí puedes volver siempre que quieras a ver a quién le regalas (solo lo ves tú). Al lado tienes tu número de lote: en la comida, tu regalo será el paquete con ese número. El que tú regalas va envuelto y con el lote de tu contrato escrito, nunca con un nombre.",
   },
   {
     ruta: "/mis-fichas",
@@ -40,7 +40,7 @@ const PASOS = [
     ruta: "/caja",
     titulo: "Tus pistas",
     texto:
-      "Aquí te llegan las pistas que te deja quien te regala a ti. Te avisaremos por WhatsApp cuando haya una nueva. ¡A ver si adivinas quién es antes de la cena!",
+      "Aquí te llegan las pistas que te deja quien te regala a ti. Te avisaremos por WhatsApp cuando haya una nueva. ¡A ver si adivinas quién es antes de la comida!",
   },
 ];
 

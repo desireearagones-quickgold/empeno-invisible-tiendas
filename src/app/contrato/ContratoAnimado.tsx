@@ -166,7 +166,7 @@ export default function ContratoAnimado({
 
       <p className="mt-4 text-xs leading-relaxed text-black/70">
         <strong>Condiciones:</strong> hasta la fecha de devolución, no se puede contar a nadie quién es el
-        depositante (o sea: no digas que el regalo es tuyo). En la cena, el regalo se da envuelto
+        depositante (o sea: no digas que el regalo es tuyo). En la comida, el regalo se da envuelto
         y marcado solo con el código de lote de arriba, nunca con un nombre.
       </p>
     </>

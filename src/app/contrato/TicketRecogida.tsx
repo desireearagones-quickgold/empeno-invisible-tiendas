@@ -4,7 +4,7 @@ import LogoQuickgold from "@/components/LogoQuickgold";
 
 /**
  * El lote de quien RECIBE: el número que llevará escrito su paquete en la
- * cena, para saber cuál es el suyo. A propósito nunca dice quién lo regala:
+ * comida, para saber cuál es el suyo. A propósito nunca dice quién lo regala:
  * ese dato ni siquiera se consulta al construir esta pantalla.
  */
 export default function TicketRecogida({
@@ -33,12 +33,12 @@ export default function TicketRecogida({
           </div>
           <div className="flex justify-between gap-4">
             <dt className="text-black/60">Entrega</dt>
-            <dd className="font-semibold">El día de la cena</dd>
+            <dd className="font-semibold">El día de la comida</dd>
           </div>
         </dl>
 
         <p className="mt-auto pt-4 text-xs leading-relaxed text-black/70">
-          En la cena, tu regalo será el paquete marcado con el <strong>lote {contractNumber}</strong>. Apúntate el
+          En la comida, tu regalo será el paquete marcado con el <strong>lote {contractNumber}</strong>. Apúntate el
           número o haz una captura de pantalla.
         </p>
       </div>

@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "El Empeño Invisible · Tiendas",
-  description: "Amigo invisible de las tiendas: sorteo, pistas y cena.",
+  description: "Amigo invisible de las tiendas: sorteo, pistas y comida.",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {

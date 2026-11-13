@@ -49,7 +49,7 @@ export default async function Contrato() {
   const [fechaSorteo] = await db.select().from(config).where(eq(config.key, "sorteo_fecha"));
 
   // Mi propio lote como destinatario de otra persona: el número que llevará
-  // escrito el paquete que me toca en la cena. Nunca dice quién me regala.
+  // escrito el paquete que me toca en la comida. Nunca dice quién me regala.
   const [miTicket] = await db.select().from(assignments).where(eq(assignments.receiverHash, hashId(sesion.id)));
 
   return (
@@ -65,7 +65,7 @@ export default async function Contrato() {
               ? new Date(fechaSorteo.value).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/Madrid" })
               : "—"
           }
-          fechaDevolucion="El día de la cena"
+          fechaDevolucion="El día de la comida"
         />
         {miTicket && <TicketRecogida contractNumber={miTicket.contractNumber} nombreTitular={sesion.name} />}
       </div>
