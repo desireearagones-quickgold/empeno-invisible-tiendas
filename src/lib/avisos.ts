@@ -54,6 +54,9 @@ export async function procesarAvisos({ enviar, ahora = new Date() }: { enviar: b
   );
 
   const resultados: ResultadoAviso[] = [];
+  // Si a alguien le llegan varias pistas el mismo día, un solo WhatsApp:
+  // el aviso no dice qué pista es, así que tres seguidos solo molestan.
+  const avisadasAhora = new Set<string>();
   for (const n of [1, 2, 3] as const) {
     const id = `pista-${n}`;
     const llegadas = todasLasFichas
@@ -82,7 +85,9 @@ export async function procesarAvisos({ enviar, ahora = new Date() }: { enviar: b
         await Promise.all(
           tocan.slice(i, i + 6).map(async ({ receptor: p }) => {
             try {
-              await enviarWhatsApp(p.phone!, {
+              const repetido = avisadasAhora.has(p.id);
+              avisadasAhora.add(p.id);
+              if (!repetido) await enviarWhatsApp(p.phone!, {
                 template: PLANTILLA_PISTA.nombre,
                 lang: PLANTILLA_PISTA.idioma,
                 botonSufijo: `caja/${p.accessToken}`,
